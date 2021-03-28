@@ -22,7 +22,7 @@ pysimpleurl
 readouterr
 repo
 runpy
-sfquery
+sfbulkquery
 subparsers
 tmp
 unlink

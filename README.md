@@ -1,4 +1,4 @@
-# sfquery
+# sfbulkquery
 
 Bulk query client for Salesforce.
 

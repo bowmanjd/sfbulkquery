@@ -1,7 +1,7 @@
-"""Tests for sfquery."""
+"""Tests for sfbulkquery."""
 
-import sfquery
+import sfbulkquery
 
 
 def test_version():
-    assert "navigator.clipboard" in sfquery.bookmarklet()
+    assert "navigator.clipboard" in sfbulkquery.bookmarklet()
