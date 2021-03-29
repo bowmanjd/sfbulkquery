@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Salesforce Session ID Bookmarklet</title>
+    <script>
+      function copyId() {{
+          var idField = document.getElementById("marklet");
+          idField.select();
+          document.execCommand("copy");
+      }}
+    </script>
+  </head>
+  <body>
+    <h1>Salesforce Session ID Bookmarklet</h1>
+    <p>
+      Once in your bookmarks, clicking on this bookmarklet while on a Salesforce
+      page will first open a new window with the canonical Salesforce domain for
+      that org. Clicking again will copy a JSON array to your clipboard,
+      consisting of the domain and Salesforce Session Id for the currently
+      logged in user.
+    </p>
+    <h2>The Bookmarklet Link</h2>
+    <p>Drag the link below to your bookmarks.</p>
+    <a href="{marklet}">SF Session ID</a>
+    <h2>The Bookmarklet Code</h2>
+    <p>Or copy the text below into a new bookmark.</p>
+    <p><input id="marklet" type="text" value="{marklet}" /></p>
+    <p><button onclick="copyId()">Copy Bookmarklet</button></p>
+    <h2>The code from the bookmarklet, pretty printed:</h2>
+    <pre><code>{javascript}</code></pre>
+  </body>
+</html>

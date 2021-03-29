@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Bulk query client for Salesforce."""
 import argparse
+import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
@@ -87,6 +88,7 @@ def serve_bookmark(args: argparse.Namespace) -> None:
         args: argparse namespace with address and port
     """
     server = HTTPServer((args.address, args.port), BookmarkletServer)
+    server.timeout = args.timeout
     print(f"Go to\nhttp://{args.address}:{args.port}\nto install bookmarklet")
     server.handle_request()
 
@@ -97,14 +99,29 @@ def query(args: argparse.Namespace) -> None:
     Args:
         args: argparse namespace with address and port
     """
-    print(args)
+    print(args.query)
 
 
-def run() -> None:
-    """Process and execute command-line."""
+def run(arg_list: list = None) -> None:
+    """Process and execute command-line.
+
+    Args:
+        arg_list: list of command line arguments
+    """
+    if not arg_list:
+        arg_list = sys.argv[1:]
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+
+    parser.add_argument(
+        "-q",
+        "--query",
+        help="SELECT SOQL query",
+        type=str,
+    )
+
     parser.set_defaults(func=query)
     subparsers = parser.add_subparsers(title="Commands available")
 
@@ -129,9 +146,19 @@ def run() -> None:
         default=8888,
         type=int,
     )
+    bookmark_parser.add_argument(
+        "-t",
+        "--timeout",
+        help="Seconds bookmarklet instruction server should wait for browser request",
+        default=None,
+        type=float,
+    )
     bookmark_parser.set_defaults(func=serve_bookmark)
-    args = parser.parse_args()
-    args.func(args)
+    if not arg_list:
+        parser.print_help()
+    else:
+        args = parser.parse_args(arg_list)
+        args.func(args)
 
 
 if __name__ == "__main__":
