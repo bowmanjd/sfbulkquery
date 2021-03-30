@@ -1,5 +1,7 @@
 """Tests for sfbulkquery."""
 
+import io
+import json
 import pathlib
 import runpy
 import secrets
@@ -80,6 +82,48 @@ def test_latest_session_none():
     sfbulkquery.session_destroy_all()
     new_domain = sfbulkquery.session_latest_domain()
     assert not new_domain
+
+
+def test_obtain_session_from_user(monkeypatch):
+    domain = gen_domain()
+    session_id = gen_session_id()
+    user_input = io.StringIO(json.dumps([domain, session_id]))
+    monkeypatch.setattr("sys.stdin", user_input)
+    new_domain, new_session_id = sfbulkquery.session_obtain()
+    sfbulkquery.session_destroy_all()
+    assert domain == new_domain
+    assert session_id == new_session_id
+
+
+def test_obtain_session_with_failed_domain(monkeypatch):
+    domain = gen_domain()
+    session_id = gen_session_id()
+    user_input = io.StringIO(json.dumps([domain, session_id]))
+    monkeypatch.setattr("sys.stdin", user_input)
+    new_domain, new_session_id = sfbulkquery.session_obtain(
+        "nonexistent.my.salesforce.com"
+    )
+    assert domain == new_domain
+    assert session_id == new_session_id
+
+
+def test_obtain_session_with_domain(monkeypatch):
+    domain = gen_domain()
+    session_id = gen_session_id()
+    sfbulkquery.session_write(domain, session_id)
+    new_domain, new_session_id = sfbulkquery.session_obtain(domain)
+    assert domain == new_domain
+    assert session_id == new_session_id
+
+
+def test_obtain_session_latest(monkeypatch):
+    sfbulkquery.session_destroy_all()
+    domain = gen_domain()
+    session_id = gen_session_id()
+    sfbulkquery.session_write(domain, session_id)
+    new_domain, new_session_id = sfbulkquery.session_obtain()
+    assert domain == new_domain
+    assert session_id == new_session_id
 
 
 def test_query(capsys):

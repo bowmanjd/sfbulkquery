@@ -208,11 +208,13 @@ def session_obtain(domain: str = None) -> tuple:
     """
     if not domain:
         domain = session_latest_domain()
-    else:
+
+    if domain:
         try:
             session_id = session_read(domain)
         except FileNotFoundError:
             domain = None
+
     if not domain:
         new_domain, session_id = session_prompt()
         session_write(new_domain, session_id)
