@@ -96,6 +96,7 @@ def test_obtain_session_from_user(monkeypatch):
 
 
 def test_obtain_session_with_failed_domain(monkeypatch):
+    sfbulkquery.session_destroy_all()
     domain = gen_domain()
     session_id = gen_session_id()
     user_input = io.StringIO(json.dumps([domain, session_id]))

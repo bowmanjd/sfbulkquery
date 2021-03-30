@@ -176,7 +176,7 @@ def session_destroy(session_path: pathlib.Path) -> None:
     with session_path.open("wb") as handle:
         handle.seek(150)
         handle.write(b"\0")
-    session_path.unlink(True)
+    session_path.unlink()
 
 
 def session_destroy_all() -> None:
