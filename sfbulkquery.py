@@ -1,14 +1,253 @@
 #!/usr/bin/env python3
 """Bulk query client for Salesforce."""
+
 import argparse
+import functools
 import json
+import logging
 import pathlib
 import sys
 import tempfile
 import typing
+import urllib.error
+import urllib.parse
+import urllib.request
+from email.message import Message
+from http.client import HTTPResponse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 SESSION_DIR = pathlib.Path(tempfile.gettempdir(), "sfbulk")
+
+logging.basicConfig(format="%(message)s", level=logging.INFO)
+
+
+class AuthHandler(urllib.request.BaseHandler):
+    """Handler for 401 statuses from REST API."""
+
+    def __init__(self) -> None:
+        """Initialize Handler."""
+        self.retries = 0
+
+    def http_error_401(
+        self,
+        req: urllib.request.Request,
+        fp: typing.BinaryIO,
+        code: int,
+        msg: str,
+        headers: Message,
+    ) -> HTTPResponse:
+        """Handle 401 responses.
+
+        Args:
+            req: request
+            fp: file-like object with HTTP error body
+            code: HTTP status code
+            msg: HTTP status message
+            headers: headers
+
+        Returns:
+            HTTP Response
+        """
+        retry = self.retry_auth(req, headers)
+        self.retries = 0
+        return retry
+
+    def retry_auth(self, req: urllib.request.Request, headers: Message) -> HTTPResponse:
+        """Handle retries.
+
+        Args:
+            req: request
+            headers: headers
+
+        Returns:
+            HTTP Response
+
+        Raises:
+            HTTPError: If retried more than 5 times
+        """
+        if self.retries > 5:
+            raise urllib.error.HTTPError(
+                req.full_url, 401, "Auth failed", dict(headers), None
+            )
+        else:
+            self.retries += 1
+        domain, session_id = session_prompt()
+        req.add_unredirected_header("Authorization", f"Bearer {session_id}")
+        response = self.parent.open(req)
+        return response
+
+
+class SafeOpener(urllib.request.OpenerDirector):
+    """A URL opener with configurable set of handlers."""
+
+    def __init__(self, handlers: typing.Iterable = None):
+        """
+        Instantiate an OpenDirector with selected handlers.
+
+        Args:
+            handlers: an Iterable of handler classes
+        """
+        super().__init__()
+        handlers = handlers or (
+            urllib.request.UnknownHandler,
+            urllib.request.HTTPDefaultErrorHandler,
+            urllib.request.HTTPRedirectHandler,
+            urllib.request.HTTPSHandler,
+            urllib.request.HTTPErrorProcessor,
+            AuthHandler,
+        )
+
+        for handler_class in handlers:
+            handler = handler_class()
+            self.add_handler(handler)
+
+
+opener = SafeOpener()
+
+
+class Response(typing.NamedTuple):
+    """Container for HTTP response."""
+
+    body: str
+    headers: Message
+    status: int
+    url: str
+
+    def json(self) -> typing.Any:
+        """
+        Decode body's JSON.
+
+        Returns:
+            Pythonic representation of the JSON object
+        """
+        try:
+            output = json.loads(self.body)
+        except json.JSONDecodeError:
+            output = ""
+        return output
+
+
+def request(
+    url: str,
+    data: dict = None,
+    params: dict = None,
+    headers: dict = None,
+    method: str = "GET",
+    data_as_json: bool = True,
+) -> Response:
+    """
+    Perform HTTP request.
+
+    Args:
+        url: url to fetch
+        data: dict of keys/values to be encoded and submitted
+        params: dict of keys/values to be encoded in URL query string
+        headers: optional dict of request headers
+        method: HTTP method , such as GET or POST
+        data_as_json: if True, data will be JSON-encoded
+
+    Returns:
+        A dict with headers, body, status code, and, if applicable, object
+        rendered from JSON
+    """
+    method = method.upper()
+    request_data = None
+    headers = headers or {}
+    data = data or {}
+    params = params or {}
+    headers = {"Accept": "application/json", **headers}
+
+    if method == "GET":
+        params = {**params, **data}
+        data = None
+
+    if params:
+        url += "?" + urllib.parse.urlencode(params, doseq=True, safe="/")
+
+    if data:
+        if data_as_json:
+            request_data = json.dumps(data).encode()
+            headers["Content-Type"] = "application/json; charset=UTF-8"
+        else:
+            request_data = urllib.parse.urlencode(data).encode()
+
+    httprequest = urllib.request.Request(
+        url,
+        data=request_data,
+        headers=headers,
+        method=method,
+    )
+
+    with opener.open(
+        httprequest,
+    ) as httpresponse:
+        response = Response(
+            headers=httpresponse.headers,
+            status=httpresponse.status,
+            body=httpresponse.read().decode(
+                httpresponse.headers.get_content_charset("utf-8")
+            ),
+            url=httpresponse.url,
+        )
+
+    return response
+
+
+class Session(typing.NamedTuple):
+    """Session info."""
+
+    api_url: str
+    domain: str
+    endpoints: typing.Mapping[str, str]
+    session_id: str
+
+
+@functools.lru_cache
+def api_endpoints(url: str) -> str:
+    """Get latest supported endpoint URLs for the given domain.
+
+    Args:
+        url: Salesforce org url domain for API access
+
+    Returns:
+        API version string
+    """
+    if not url.startswith("http"):
+        url = f"https://{url}"
+    domain = urllib.parse.urlparse(url).netloc
+    response = request(f"https://{domain}/services/data/")
+    base = response.json()[-1]["url"]
+    endpoint_domain = urllib.parse.urlparse(response.url).netloc
+    return f"https://{endpoint_domain}{base}"
+    # response = request(base)
+
+
+@functools.lru_cache
+def latest_api_version(domain: str) -> str:
+    """Get latest supported API version for the given domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        API version string
+    """
+    response = request(f"https://{domain}/services/data/")
+    return max(x["version"] for x in response.json())
+
+
+@functools.lru_cache
+def org_info(domain: str) -> dict:
+    """Get org info from this domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        Org info dict
+    """
+    response = request(f"https://{domain}/services/data/v{latest_api_version(domain)}/")
+    return response.json()
 
 
 def bookmarklet() -> str:
@@ -95,7 +334,7 @@ def bookmark_serve(args: argparse.Namespace) -> None:
     """
     server = HTTPServer((args.address, args.port), BookmarkletServer)
     server.timeout = args.timeout
-    print(f"Go to\nhttp://{args.address}:{args.port}\nto install bookmarklet")
+    logging.info(f"Go to\nhttp://{args.address}:{args.port}\nto install bookmarklet")
     server.handle_request()
 
 
@@ -105,7 +344,7 @@ def query(args: argparse.Namespace) -> None:
     Args:
         args: argparse namespace with address and port
     """
-    print(args.query)
+    logging.info(args.query)
 
 
 def run(arg_list: list = None) -> None:
@@ -197,8 +436,8 @@ def session_file_path(domain: str) -> pathlib.Path:
     return SESSION_DIR / f"{domain}.session"
 
 
-def session_obtain(domain: str = None) -> tuple:
-    """Get login ID and key from file or prompt.
+def session_obtain(domain: str) -> tuple:
+    """Get domain and Session ID and key from file or prompt.
 
     Args:
         domain: Salesforce domain for API access
@@ -206,16 +445,9 @@ def session_obtain(domain: str = None) -> tuple:
     Returns:
         Tuple of API Login ID and Transaction Key
     """
-    if not domain:
-        domain = session_latest_domain()
-
-    if domain:
-        try:
-            session_id = session_read(domain)
-        except FileNotFoundError:
-            domain = None
-
-    if not domain:
+    try:
+        session_id = session_read(domain)
+    except FileNotFoundError:
         new_domain, session_id = session_prompt()
         session_write(new_domain, session_id)
         domain = new_domain
@@ -282,4 +514,5 @@ def session_write(domain: str, session_id: str) -> None:
 
 
 if __name__ == "__main__":
-    run()
+    # run()
+    logging.info(api_endpoints("devhub-bowmanjd-dev-ed.lightning.force.com/"))
