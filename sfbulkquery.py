@@ -8,6 +8,7 @@ import logging
 import pathlib
 import sys
 import tempfile
+import time
 import typing
 import urllib.error
 import urllib.parse
@@ -71,8 +72,11 @@ class AuthHandler(urllib.request.BaseHandler):
             )
         else:
             self.retries += 1
-        domain, session_id = session_prompt()
-        req.add_unredirected_header("Authorization", f"Bearer {session_id}")
+
+        sf_session = session_update(urllib.parse.urlparse(req.full_url).netloc)
+        req.add_unredirected_header(
+            "Authorization", f"Bearer {sf_session.recent_user().session_id}"
+        )
         response = self.parent.open(req)
         return response
 
@@ -134,6 +138,7 @@ def request(
     headers: dict = None,
     method: str = "GET",
     data_as_json: bool = True,
+    sf_domain: str = None,
 ) -> Response:
     """
     Perform HTTP request.
@@ -155,7 +160,7 @@ def request(
     headers = headers or {}
     data = data or {}
     params = params or {}
-    headers = {"Accept": "application/json", **headers}
+    headers = {"Accept": "application/json, text/csv", **headers}
 
     if method == "GET":
         params = {**params, **data}
@@ -170,6 +175,11 @@ def request(
             headers["Content-Type"] = "application/json; charset=UTF-8"
         else:
             request_data = urllib.parse.urlencode(data).encode()
+
+    sf_domain = sf_domain or urllib.parse.urlparse(url).netloc
+    sf_session = session_read(sf_domain)
+    if sf_session:
+        headers["Authorization"] = f"Bearer {sf_session.recent_user().session_id}"
 
     httprequest = urllib.request.Request(
         url,
@@ -191,63 +201,6 @@ def request(
         )
 
     return response
-
-
-class Session(typing.NamedTuple):
-    """Session info."""
-
-    api_url: str
-    domain: str
-    endpoints: typing.Mapping[str, str]
-    session_id: str
-
-
-@functools.lru_cache
-def api_endpoints(url: str) -> str:
-    """Get latest supported endpoint URLs for the given domain.
-
-    Args:
-        url: Salesforce org url domain for API access
-
-    Returns:
-        API version string
-    """
-    if not url.startswith("http"):
-        url = f"https://{url}"
-    domain = urllib.parse.urlparse(url).netloc
-    response = request(f"https://{domain}/services/data/")
-    base = response.json()[-1]["url"]
-    endpoint_domain = urllib.parse.urlparse(response.url).netloc
-    return f"https://{endpoint_domain}{base}"
-    # response = request(base)
-
-
-@functools.lru_cache
-def latest_api_version(domain: str) -> str:
-    """Get latest supported API version for the given domain.
-
-    Args:
-        domain: Salesforce domain for API access
-
-    Returns:
-        API version string
-    """
-    response = request(f"https://{domain}/services/data/")
-    return max(x["version"] for x in response.json())
-
-
-@functools.lru_cache
-def org_info(domain: str) -> dict:
-    """Get org info from this domain.
-
-    Args:
-        domain: Salesforce domain for API access
-
-    Returns:
-        Org info dict
-    """
-    response = request(f"https://{domain}/services/data/v{latest_api_version(domain)}/")
-    return response.json()
 
 
 def bookmarklet() -> str:
@@ -406,6 +359,35 @@ def run(arg_list: list = None) -> None:
         args.func(args)
 
 
+class SessionUser(typing.NamedTuple):
+    """Session user info."""
+
+    session_id: str
+    timestamp: float
+    display_name: str = ""
+    user_id: str = ""
+    username: str = ""
+
+
+class Session(typing.NamedTuple):
+    """Session info."""
+
+    domain: str
+    rest_url: str
+    users: dict[str, SessionUser]
+    org_id: str = ""
+    org_name: str = ""
+    endpoints: typing.Mapping[str, str] = {}
+
+    def recent_user(self) -> SessionUser:
+        """Get most recent user.
+
+        Returns:
+            Recent user info
+        """
+        return max(self.users.values(), key=lambda u: u.timestamp)
+
+
 def session_destroy(session_path: pathlib.Path) -> None:
     """Zero fill and delete specified session file.
 
@@ -436,6 +418,143 @@ def session_file_path(domain: str) -> pathlib.Path:
     return SESSION_DIR / f"{domain}.session"
 
 
+@functools.lru_cache(maxsize=None)
+def session_endpoints(domain: str) -> dict:
+    """Get latest supported endpoint URLs for the given domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        API version string
+    """
+    url = session_url(domain)
+    response = request(url)
+    endpoints = response.json()
+    for endpoint, endpoint_url in endpoints.items():
+        if not endpoint_url.startswith("http"):
+            endpoints[endpoint] = f"https://{domain}{endpoint_url}"
+    return endpoints
+
+
+@functools.lru_cache(maxsize=None)
+def session_id_info(domain: str) -> dict:
+    """Get identity info from this domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        Dict with identity info
+    """
+    endpoints = session_endpoints(domain)
+    response = request(endpoints["identity"], sf_domain=domain)
+    return response.json()
+
+
+@functools.lru_cache(maxsize=None)
+def session_org_info(domain: str) -> dict:
+    """Get org info from this domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        Org info dict
+    """
+    endpoints = session_endpoints(domain)
+    org_id = next(x for x in endpoints["identity"].split("/") if x.startswith("00D"))
+    response = request(
+        f"{endpoints['sobjects']}/Organization/{org_id}",
+        params={"fields": "Name,InstanceName,TimeZoneSidKey"},
+    )
+    return response.json()
+
+
+@functools.lru_cache(maxsize=None)
+def session_url(domain: str) -> str:
+    """Get latest supported API version for the given domain.
+
+    Args:
+        domain: Salesforce domain for API access
+
+    Returns:
+        API data URL
+    """
+    response = request(f"https://{domain}/services/data/")
+    domain = urllib.parse.urlparse(response.url).netloc
+    url_path = response.json()[-1]["url"]
+    return f"https://{domain}{url_path}"
+
+
+def session_domain(url: str) -> str:
+    """Get canonical API domain from URL.
+
+    Args:
+        url: Salesforce org url or domain for API access
+
+    Returns:
+        domain string
+    """
+    if not url.startswith("http"):
+        url = f"https://{url}"
+    domain = urllib.parse.urlparse(url).netloc
+    response = request(f"https://{domain}/services/data/")
+    domain = urllib.parse.urlparse(response.url).netloc
+    return domain
+
+
+def session_update(username: str = None) -> Session:
+    """Update given session object.
+
+    Args:
+        username: optional Salesforce username
+
+    Returns:
+        Refreshed Session object
+    """
+    tmp_user = "placeholder@example.org"
+    if not username:
+        username = tmp_user
+    domain, session_id = session_prompt()
+    rest_url = session_url(domain)
+    domain = urllib.parse.urlparse(rest_url).netloc
+    old_session = session_read(domain)
+    if old_session:
+        session_dict = old_session._asdict()
+        session_dict["users"] = old_session.users
+    else:
+        session_dict = {"users": {}}
+    session_dict["users"][username] = SessionUser(
+        session_id=session_id, timestamp=time.time()
+    )
+    session_dict["domain"] = domain
+    session_dict["rest_url"] = rest_url
+
+    skinny_session = Session(**session_dict)
+    session_write(skinny_session)
+
+    endpoints = session_endpoints(domain)
+    id_info = session_id_info(domain)
+    org_info = session_org_info(domain)
+
+    session_dict["endpoints"] = endpoints
+    session_dict["org_id"] = id_info["organization_id"]
+    session_dict["org_name"] = org_info["Name"]
+    session_dict["users"].pop(tmp_user, None)
+    session_dict["users"][id_info["username"]] = SessionUser(
+        display_name=id_info["display_name"],
+        session_id=session_id,
+        user_id=id_info["user_id"],
+        username=id_info["username"],
+        timestamp=time.time(),
+    )
+
+    session = Session(**session_dict)
+    session_write(session)
+    return session
+
+
 def session_obtain(domain: str) -> tuple:
     """Get domain and Session ID and key from file or prompt.
 
@@ -445,16 +564,14 @@ def session_obtain(domain: str) -> tuple:
     Returns:
         Tuple of API Login ID and Transaction Key
     """
-    try:
-        session_id = session_read(domain)
-    except FileNotFoundError:
-        new_domain, session_id = session_prompt()
-        session_write(new_domain, session_id)
-        domain = new_domain
-    return domain, session_id
+    session = session_read(domain)
+    if not session:
+        session_update(new_domain)
+    return session
 
 
-def session_read(domain: str) -> str:
+@functools.lru_cache(maxsize=None)
+def session_read(domain: str) -> typing.Optional[Session]:
     """Get Session ID for this domain.
 
     Args:
@@ -463,7 +580,16 @@ def session_read(domain: str) -> str:
     Returns:
         Session ID
     """
-    return session_file_path(domain).read_text()
+    try:
+        with session_file_path(domain).open() as handle:
+            session = json.load(handle)
+            session["users"] = {
+                k: SessionUser(**v) for k, v in session["users"].items()
+            }
+            session = Session(**session)
+    except (FileNotFoundError, json.JSONDecodeError):
+        session = None
+    return session
 
 
 def session_latest_domain() -> typing.Optional[str]:
@@ -499,20 +625,24 @@ def session_prompt() -> tuple:
     return domain, session_id
 
 
-def session_write(domain: str, session_id: str) -> None:
+def session_write(session: Session) -> None:
     """Create/update session file with Session ID.
 
     Args:
-        domain: Salesforce domain for API access
-        session_id: the Salesforce Session ID to be recorded
+        session: Session object
     """
-    session_path = session_file_path(domain)
+    session_path = session_file_path(session.domain)
     session_dir = session_path.parent
     session_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     session_path.touch(mode=0o600, exist_ok=True)
-    session_path.write_text(session_id)
+    session_dict = session._asdict()
+    session_dict["users"] = {k: v._asdict() for k, v in session.users.items()}
+    with session_path.open("w") as handle:
+        json.dump(session_dict, handle, indent=2)
+    session_read.cache_clear()
 
 
 if __name__ == "__main__":
     # run()
-    logging.info(api_endpoints("devhub-bowmanjd-dev-ed.lightning.force.com/"))
+    session_update()
+    # logging.info(session_org_info("devhub-bowmanjd-dev-ed.lightning.force.com/"))

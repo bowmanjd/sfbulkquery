@@ -27,6 +27,7 @@ repo
 req
 runpy
 sfbulkquery
+sobjects
 subparsers
 tmp
 unlink
