@@ -16,6 +16,7 @@ gettempdir
 jsonformat
 lru
 marklet
+mydomain
 noqa
 nosec
 params
@@ -32,4 +33,5 @@ subparsers
 tmp
 unlink
 unredirected
+urlsafe
 wfile

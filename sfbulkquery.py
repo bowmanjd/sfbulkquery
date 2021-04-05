@@ -150,6 +150,7 @@ def request(
         headers: optional dict of request headers
         method: HTTP method , such as GET or POST
         data_as_json: if True, data will be JSON-encoded
+        sf_domain: optional explicit domain
 
     Returns:
         A dict with headers, body, status code, and, if applicable, object
@@ -297,7 +298,7 @@ def query(args: argparse.Namespace) -> None:
     Args:
         args: argparse namespace with address and port
     """
-    logging.info(args.query)
+    print(args.query)
 
 
 def run(arg_list: list = None) -> None:
@@ -367,6 +368,9 @@ class SessionUser(typing.NamedTuple):
     display_name: str = ""
     user_id: str = ""
     username: str = ""
+    language: str = ""
+    locale: str = ""
+    timezone: str = ""
 
 
 class Session(typing.NamedTuple):
@@ -374,10 +378,15 @@ class Session(typing.NamedTuple):
 
     domain: str
     rest_url: str
-    users: dict[str, SessionUser]
+    users: typing.Dict[str, SessionUser]
     org_id: str = ""
     org_name: str = ""
     endpoints: typing.Mapping[str, str] = {}
+    instance: str = ""
+    timezone: str = ""
+    org_type: str = ""
+    sandbox: bool = False
+    lang_locale: str = ""
 
     def recent_user(self) -> SessionUser:
         """Get most recent user.
@@ -466,7 +475,10 @@ def session_org_info(domain: str) -> dict:
     org_id = next(x for x in endpoints["identity"].split("/") if x.startswith("00D"))
     response = request(
         f"{endpoints['sobjects']}/Organization/{org_id}",
-        params={"fields": "Name,InstanceName,TimeZoneSidKey"},
+        params={
+            "fields": "Name,InstanceName,TimeZoneSidKey,"
+            "OrganizationType,IsSandbox,LanguageLocaleKey"
+        },
     )
     return response.json()
 
@@ -541,32 +553,26 @@ def session_update(username: str = None) -> Session:
     session_dict["endpoints"] = endpoints
     session_dict["org_id"] = id_info["organization_id"]
     session_dict["org_name"] = org_info["Name"]
+
+    session_dict["instance"] = org_info["InstanceName"]
+    session_dict["timezone"] = org_info["TimeZoneSidKey"]
+    session_dict["org_type"] = org_info["OrganizationType"]
+    session_dict["sandbox"] = org_info["IsSandbox"]
+    session_dict["lang_locale"] = org_info["LanguageLocaleKey"]
     session_dict["users"].pop(tmp_user, None)
     session_dict["users"][id_info["username"]] = SessionUser(
         display_name=id_info["display_name"],
         session_id=session_id,
         user_id=id_info["user_id"],
         username=id_info["username"],
+        language=id_info["language"],
+        locale=id_info["locale"],
+        timezone=id_info["timezone"],
         timestamp=time.time(),
     )
 
     session = Session(**session_dict)
     session_write(session)
-    return session
-
-
-def session_obtain(domain: str) -> tuple:
-    """Get domain and Session ID and key from file or prompt.
-
-    Args:
-        domain: Salesforce domain for API access
-
-    Returns:
-        Tuple of API Login ID and Transaction Key
-    """
-    session = session_read(domain)
-    if not session:
-        session_update(new_domain)
     return session
 
 
@@ -643,6 +649,4 @@ def session_write(session: Session) -> None:
 
 
 if __name__ == "__main__":
-    # run()
-    session_update()
-    # logging.info(session_org_info("devhub-bowmanjd-dev-ed.lightning.force.com/"))
+    run()
