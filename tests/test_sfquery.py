@@ -31,6 +31,35 @@ class SFSession(typing.NamedTuple):
     session_id: str
 
 
+def new_session(mydomain, session_id, org_id, user_id, username, timestamp):
+    template = pathlib.Path("tests/sample_session.json").read_text()
+    raw = template.format(
+        mydomain=mydomain,
+        session_id=session_id,
+        org_id=org_id,
+        user_id=user_id,
+        username=username,
+        timestamp=timestamp,
+    )
+    session_dict = json.loads(raw)
+    session_dict["users"] = {
+        k: sfbulkquery.SessionUser(**v) for k, v in session_dict["users"].items()
+    }
+    return sfbulkquery.Session(**session_dict)
+
+
+def gen_session():
+    org_id = f"00D{secrets.token_urlsafe(15)}"
+    user_id = f"005{secrets.token_urlsafe(15)}"
+    mydomain = secrets.token_urlsafe(secrets.randbelow(40))
+    username = secrets.token_urlsafe(8) + "@example.org"
+    timestamp = time.time()
+    part_1 = secrets.token_urlsafe(41)
+    part_2 = secrets.token_urlsafe(53)
+    session_id = f"{org_id[:15]}!{part_1}.{part_2}"
+    return new_session(mydomain, session_id, org_id, user_id, username, timestamp)
+
+
 @pytest.fixture(scope="module")
 def sf_global_session(vcr):
     if vcr.record_mode == "none":
@@ -98,8 +127,15 @@ def test_session_update(sf_session, monkeypatch):
     user_input = io.StringIO(json.dumps([sf_session.domain, sf_session.session_id]))
     monkeypatch.setattr("sys.stdin", user_input)
     session = sfbulkquery.session_update()
-    assert session.domain == sf_session.domain
-    assert session.recent_user().session_id == sf_session.session_id
+    sample_session = new_session(
+        FAKE_MYDOMAIN,
+        FAKE_SESSION_ID,
+        FAKE_ORG_ID,
+        FAKE_USER_ID,
+        FAKE_EMAIL,
+        session.recent_user().timestamp,
+    )
+    assert session == sample_session
 
 
 def test_session_update_invalid(sf_session, monkeypatch):
@@ -121,35 +157,6 @@ def test_session_id_repeatedly_invalid(sf_session, monkeypatch):
     with pytest.raises(urllib.error.HTTPError) as e:
         sfbulkquery.session_org_info(sf_session.domain)
     assert e.value.code == 401
-
-
-def new_session(mydomain, session_id, org_id, user_id, username, timestamp):
-    template = pathlib.Path("tests/sample_session.json").read_text()
-    raw = template.format(
-        mydomain=mydomain,
-        session_id=session_id,
-        org_id=org_id,
-        user_id=user_id,
-        username=username,
-        timestamp=timestamp,
-    )
-    session_dict = json.loads(raw)
-    session_dict["users"] = {
-        k: sfbulkquery.SessionUser(**v) for k, v in session_dict["users"].items()
-    }
-    return sfbulkquery.Session(**session_dict)
-
-
-def gen_session():
-    org_id = f"00D{secrets.token_urlsafe(15)}"
-    user_id = f"005{secrets.token_urlsafe(15)}"
-    mydomain = secrets.token_urlsafe(secrets.randbelow(40))
-    username = secrets.token_urlsafe(8) + "@example.org"
-    timestamp = time.time()
-    part_1 = secrets.token_urlsafe(41)
-    part_2 = secrets.token_urlsafe(53)
-    session_id = f"{org_id[:15]}!{part_1}.{part_2}"
-    return new_session(mydomain, session_id, org_id, user_id, username, timestamp)
 
 
 def test_bookmarklet_js():

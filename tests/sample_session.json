@@ -5,16 +5,17 @@
     "{username}": {{
       "session_id": "{session_id}",
       "timestamp": {timestamp},
-      "display_name": "Bernard Felix",
+      "display_name": "Sylvester Green",
       "user_id": "{user_id}",
       "username": "{username}",
+      "phone": "+1 5555551234",
       "language": "en_US",
       "locale": "en_US",
       "timezone": "America/New_York"
     }}
   }},
   "org_id": "{org_id}",
-  "org_name": "Fake Data LLC",
+  "org_name": "Green Solutions",
   "endpoints": {{
     "tooling": "https://{mydomain}.my.salesforce.com/services/data/v51.0/tooling",
     "metadata": "https://{mydomain}.my.salesforce.com/services/data/v51.0/metadata",
