@@ -7,6 +7,8 @@ import runpy
 import secrets
 import sys
 import time
+import typing
+import urllib.error
 from multiprocessing import Process
 from urllib.request import urlopen
 
@@ -14,18 +16,111 @@ import pytest
 
 import sfbulkquery
 
-FAKE_DOMAIN = "fake-dev-ed.my.salesforce.com"
+FAKE_MYDOMAIN = "fake-dev-ed"
+FAKE_DOMAIN = f"{FAKE_MYDOMAIN}.my.salesforce.com"
 FAKE_SESSION_ID = "00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ"  # noqa: E501
 FAKE_ORG_ID = "00D7f111111tgVeRBP"
 FAKE_USER_ID = "0054a101010TkPiJJB"
-DOMAIN = "devhub-bowmanjd-dev-ed.my.salesforce.com"
+FAKE_NAME = "Sylvester Green"
+FAKE_EMAIL = "sgreen@example.org"
+FAKE_PHONE = "5555551234"
+
+
+class SFSession(typing.NamedTuple):
+    domain: str
+    session_id: str
 
 
 @pytest.fixture(scope="module")
-def vcr_config():
-    return {
-        "filter_headers": [("Authorization", f"Bearer {FAKE_SESSION_ID}")],
-    }
+def sf_global_session(vcr):
+    if vcr.record_mode == "none":
+        domain = FAKE_DOMAIN
+        session_id = FAKE_SESSION_ID
+    else:
+        domain, session_id = sfbulkquery.session_prompt()
+    return SFSession(domain, session_id)
+
+
+def sanitize_cassette(content, sf_session):
+    new_content = content.replace(
+        sf_session.domain.split(".")[0], FAKE_MYDOMAIN
+    ).replace(sf_session.session_id, FAKE_SESSION_ID)
+    session = sfbulkquery.session_read(sf_session.domain)
+    if session:
+        user = session.recent_user()
+        if user.user_id:
+            new_content = new_content.replace(user.user_id, FAKE_USER_ID)
+        if session.org_id:
+            new_content = new_content.replace(session.org_id, FAKE_ORG_ID)
+        if user.username:
+            new_content = new_content.replace(user.username, FAKE_EMAIL)
+            new_content = new_content.replace(
+                user.username.split("@")[0], FAKE_EMAIL.split("@")[0]
+            )
+        if user.phone:
+            new_content = new_content.replace(user.phone[-10:], FAKE_PHONE)
+        if user.display_name:
+            new_first, new_last = FAKE_NAME.split(" ")
+            first_last = user.display_name.split(" ")
+            new_content = new_content.replace(first_last[0], new_first)
+            new_content = new_content.replace(first_last[-1], new_last)
+    return new_content
+
+
+@pytest.fixture()
+def sf_session(sf_global_session, vcr_cassette):
+    sfbulkquery.session_read.cache_clear()
+    sfbulkquery.session_endpoints.cache_clear()
+    sfbulkquery.session_id_info.cache_clear()
+    sfbulkquery.session_org_info.cache_clear()
+    yield sf_global_session
+    if vcr_cassette.play_count == 0:
+        vcr_cassette._save()
+        cassette_path = pathlib.Path(vcr_cassette._path)
+        if cassette_path.exists():
+            content = cassette_path.read_text()
+            new_content = sanitize_cassette(content, sf_global_session)
+            cassette_path.write_text(new_content)
+    sfbulkquery.session_destroy_all()
+
+
+def test_session_domain(sf_session):
+    assert sf_session.domain == sfbulkquery.session_domain(sf_session.domain)
+
+
+def test_session_domain_url(sf_session):
+    mydomain = sf_session.domain.split(".")[0]
+    url = f"https://{mydomain}.lightning.force.com/lightning/setup/SetupOneHome/home"
+    assert sf_session.domain == sfbulkquery.session_domain(url)
+
+
+def test_session_update(sf_session, monkeypatch):
+    user_input = io.StringIO(json.dumps([sf_session.domain, sf_session.session_id]))
+    monkeypatch.setattr("sys.stdin", user_input)
+    session = sfbulkquery.session_update()
+    assert session.domain == sf_session.domain
+    assert session.recent_user().session_id == sf_session.session_id
+
+
+def test_session_update_invalid(sf_session, monkeypatch):
+    bad_try = json.dumps([sf_session.domain, "bad_session"])
+    good_try = json.dumps([sf_session.domain, sf_session.session_id])
+    user_input = io.StringIO(f"{bad_try}\n{good_try}")
+    monkeypatch.setattr("sys.stdin", user_input)
+    session = sfbulkquery.session_update()
+    assert session.domain == sf_session.domain
+    assert session.recent_user().session_id == sf_session.session_id
+
+
+def test_session_id_repeatedly_invalid(sf_session, monkeypatch):
+    bad_try = json.dumps([sf_session.domain, "bad_session"])
+    user_input = io.StringIO()
+    user_input.writelines([f"{bad_try}\n"] * 7)
+    user_input.seek(0)
+    monkeypatch.setattr("sys.stdin", user_input)
+    with pytest.raises(urllib.error.HTTPError) as e:
+        sfbulkquery.session_org_info(sf_session.domain)
+    assert e.value.code == 401
 
 
 def new_session(mydomain, session_id, org_id, user_id, username, timestamp):

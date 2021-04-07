@@ -73,7 +73,7 @@ class AuthHandler(urllib.request.BaseHandler):
         else:
             self.retries += 1
 
-        sf_session = session_update(urllib.parse.urlparse(req.full_url).netloc)
+        sf_session = session_update()
         req.add_unredirected_header(
             "Authorization", f"Bearer {sf_session.recent_user().session_id}"
         )
@@ -368,6 +368,7 @@ class SessionUser(typing.NamedTuple):
     display_name: str = ""
     user_id: str = ""
     username: str = ""
+    phone: str = ""
     language: str = ""
     locale: str = ""
     timezone: str = ""
@@ -550,6 +551,10 @@ def session_update(username: str = None) -> Session:
     id_info = session_id_info(domain)
     org_info = session_org_info(domain)
 
+    verify_session = session_read(domain)
+    if verify_session:
+        session_id = verify_session.recent_user().session_id
+
     session_dict["endpoints"] = endpoints
     session_dict["org_id"] = id_info["organization_id"]
     session_dict["org_name"] = org_info["Name"]
@@ -565,6 +570,7 @@ def session_update(username: str = None) -> Session:
         session_id=session_id,
         user_id=id_info["user_id"],
         username=id_info["username"],
+        phone=id_info["mobile_phone"],
         language=id_info["language"],
         locale=id_info["locale"],
         timezone=id_info["timezone"],

@@ -35,3 +35,4 @@ unlink
 unredirected
 urlsafe
 wfile
+writelines
