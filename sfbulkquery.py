@@ -301,65 +301,6 @@ def query(args: argparse.Namespace) -> None:
     print(args.query)
 
 
-def run(arg_list: list = None) -> None:
-    """Process and execute command-line.
-
-    Args:
-        arg_list: list of command line arguments
-    """
-    if not arg_list:
-        arg_list = sys.argv[1:]
-
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
-
-    parser.add_argument(
-        "-q",
-        "--query",
-        help="SELECT SOQL query",
-        type=str,
-    )
-
-    parser.set_defaults(func=query)
-    subparsers = parser.add_subparsers(title="Commands available")
-
-    bookmark_help = "Serve instructions for SF Session authentication via bookmarklet"
-    bookmark_parser = subparsers.add_parser(
-        "bookmark",
-        description=bookmark_help,
-        help=bookmark_help,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    bookmark_parser.add_argument(
-        "-a",
-        "--address",
-        help="Address from which to serve bookmarklet instructions",
-        default="localhost",
-        type=str,
-    )
-    bookmark_parser.add_argument(
-        "-p",
-        "--port",
-        help="Port to use for serving bookmarklet instructions",
-        default=8888,
-        type=int,
-    )
-    bookmark_parser.add_argument(
-        "-t",
-        "--timeout",
-        help="Seconds bookmarklet instruction server should wait for browser request",
-        default=None,
-        type=float,
-    )
-    bookmark_parser.set_defaults(func=bookmark_serve)
-    if not arg_list:
-        parser.print_help()
-    else:
-        args = parser.parse_args(arg_list)
-        args.func(args)
-
-
 class SessionUser(typing.NamedTuple):
     """Session user info."""
 
@@ -654,6 +595,65 @@ def session_write(session: Session) -> None:
     with session_path.open("w") as handle:
         json.dump(session_dict, handle, indent=2)
     session_read.cache_clear()
+
+
+def run(arg_list: list = None) -> None:
+    """Process and execute command-line.
+
+    Args:
+        arg_list: list of command line arguments
+    """
+    if not arg_list:
+        arg_list = sys.argv[1:]
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument(
+        "-q",
+        "--query",
+        help="SELECT SOQL query",
+        type=str,
+    )
+
+    parser.set_defaults(func=query)
+    subparsers = parser.add_subparsers(title="Commands available")
+
+    bookmark_help = "Serve instructions for SF Session authentication via bookmarklet"
+    bookmark_parser = subparsers.add_parser(
+        "bookmark",
+        description=bookmark_help,
+        help=bookmark_help,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    bookmark_parser.add_argument(
+        "-a",
+        "--address",
+        help="Address from which to serve bookmarklet instructions",
+        default="localhost",
+        type=str,
+    )
+    bookmark_parser.add_argument(
+        "-p",
+        "--port",
+        help="Port to use for serving bookmarklet instructions",
+        default=8888,
+        type=int,
+    )
+    bookmark_parser.add_argument(
+        "-t",
+        "--timeout",
+        help="Seconds bookmarklet instruction server should wait for browser request",
+        default=None,
+        type=float,
+    )
+    bookmark_parser.set_defaults(func=bookmark_serve)
+    if not arg_list:
+        parser.print_help()
+    else:
+        args = parser.parse_args(arg_list)
+        args.func(args)
 
 
 if __name__ == "__main__":
