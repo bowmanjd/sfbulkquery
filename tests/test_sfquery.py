@@ -3,12 +3,14 @@
 import io
 import json
 import pathlib
+import re
 import runpy
 import secrets
 import sys
 import time
 import typing
 import urllib.error
+from email.message import Message
 from multiprocessing import Process
 from urllib.request import urlopen
 
@@ -23,7 +25,8 @@ FAKE_ORG_ID = "00D7f111111tgVeRBP"
 FAKE_USER_ID = "0054a101010TkPiJJB"
 FAKE_NAME = "Sylvester Green"
 FAKE_EMAIL = "sgreen@example.org"
-FAKE_PHONE = "5555551234"
+FAKE_PHONE = "+1 5555551234"
+FAKE_COMPANY = "Green Endeavors"
 
 
 class SFSession(typing.NamedTuple):
@@ -31,16 +34,9 @@ class SFSession(typing.NamedTuple):
     session_id: str
 
 
-def new_session(mydomain, session_id, org_id, user_id, username, timestamp):
+def new_session(**kwargs):
     template = pathlib.Path("tests/sample_session.json").read_text()
-    raw = template.format(
-        mydomain=mydomain,
-        session_id=session_id,
-        org_id=org_id,
-        user_id=user_id,
-        username=username,
-        timestamp=timestamp,
-    )
+    raw = template.format(**kwargs)
     session_dict = json.loads(raw)
     session_dict["users"] = {
         k: sfbulkquery.SessionUser(**v) for k, v in session_dict["users"].items()
@@ -50,14 +46,21 @@ def new_session(mydomain, session_id, org_id, user_id, username, timestamp):
 
 def gen_session():
     org_id = f"00D{secrets.token_urlsafe(15)}"
-    user_id = f"005{secrets.token_urlsafe(15)}"
-    mydomain = secrets.token_urlsafe(secrets.randbelow(40))
-    username = secrets.token_urlsafe(8) + "@example.org"
-    timestamp = time.time()
-    part_1 = secrets.token_urlsafe(41)
-    part_2 = secrets.token_urlsafe(53)
-    session_id = f"{org_id[:15]}!{part_1}.{part_2}"
-    return new_session(mydomain, session_id, org_id, user_id, username, timestamp)
+    session_dict = {
+        "org_id": org_id,
+        "user_id": f"005{secrets.token_urlsafe(15)}",
+        "mydomain": secrets.token_urlsafe(secrets.randbelow(40)),
+        "username": secrets.token_urlsafe(8) + "@example.org",
+        "display_name": " ".join([secrets.token_urlsafe(7), secrets.token_urlsafe(10)]),
+        "company": " ".join([secrets.token_urlsafe(10), secrets.token_urlsafe(3)]),
+        "phone": "+1 " + "".join(str(secrets.randbelow(10)) for _ in range(10)),
+        "timestamp": time.time(),
+        "session_id": (
+            f"{org_id[:15]}!{secrets.token_urlsafe(41)}.{secrets.token_urlsafe(53)}"
+        ),
+    }
+
+    return new_session(**session_dict)
 
 
 @pytest.fixture(scope="module")
@@ -76,18 +79,24 @@ def sanitize_cassette(content, sf_session):
     ).replace(sf_session.session_id, FAKE_SESSION_ID)
     session = sfbulkquery.session_read(sf_session.domain)
     if session:
+        if session.org_name:
+            pattern = session.org_name.replace(" ", r"\s+")
+            new_content = re.sub(pattern, FAKE_COMPANY, new_content)
         user = session.recent_user()
         if user.user_id:
             new_content = new_content.replace(user.user_id, FAKE_USER_ID)
         if session.org_id:
             new_content = new_content.replace(session.org_id, FAKE_ORG_ID)
+            new_content = new_content.replace(session.org_id[:15], FAKE_ORG_ID[:15])
+        if user.email:
+            new_content = new_content.replace(user.email, FAKE_EMAIL)
         if user.username:
             new_content = new_content.replace(user.username, FAKE_EMAIL)
             new_content = new_content.replace(
                 user.username.split("@")[0], FAKE_EMAIL.split("@")[0]
             )
         if user.phone:
-            new_content = new_content.replace(user.phone[-10:], FAKE_PHONE)
+            new_content = new_content.replace(user.phone[-10:], FAKE_PHONE[-10:])
         if user.display_name:
             new_first, new_last = FAKE_NAME.split(" ")
             first_last = user.display_name.split(" ")
@@ -128,14 +137,20 @@ def test_session_update(sf_session, monkeypatch):
     monkeypatch.setattr("sys.stdin", user_input)
     session = sfbulkquery.session_update()
     sample_session = new_session(
-        FAKE_MYDOMAIN,
-        FAKE_SESSION_ID,
-        FAKE_ORG_ID,
-        FAKE_USER_ID,
-        FAKE_EMAIL,
-        session.recent_user().timestamp,
+        mydomain=FAKE_MYDOMAIN,
+        session_id=FAKE_SESSION_ID,
+        org_id=FAKE_ORG_ID,
+        user_id=FAKE_USER_ID,
+        username=FAKE_EMAIL,
+        display_name=FAKE_NAME,
+        phone=FAKE_PHONE,
+        company=FAKE_COMPANY,
+        timestamp=session.recent_user().timestamp,
     )
-    assert session == sample_session
+    assert session.domain == sf_session.domain
+    assert session.recent_user().session_id == sf_session.session_id
+    if sf_session.domain == FAKE_DOMAIN:
+        assert session == sample_session
 
 
 def test_session_update_invalid(sf_session, monkeypatch):
@@ -242,3 +257,10 @@ def test_query(capsys):
     sfbulkquery.run(["-q", query])
     captured = capsys.readouterr()
     assert query in captured.out
+
+
+def test_response_not_json():
+    response = sfbulkquery.Response(
+        "This is not JSON", Message(), 200, "https://example.org"
+    )
+    assert response.json() == ""

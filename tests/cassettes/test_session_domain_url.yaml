@@ -25,12 +25,12 @@ interactions:
       Content-Security-Policy:
       - upgrade-insecure-requests
       Date:
-      - Wed, 07 Apr 2021 09:54:50 GMT
+      - Thu, 08 Apr 2021 09:54:11 GMT
       Location:
       - https://fake-dev-ed.my.salesforce.com/services/data/
       Set-Cookie:
-      - BrowserId=S0bqnJeHEeubMY8f86FbJg; domain=.force.com; path=/; expires=Thu,
-        07-Apr-2022 09:54:50 GMT; Max-Age=31536000
+      - BrowserId=Xjzx-JhQEeuZ6_mzp25D6w; domain=.force.com; path=/; expires=Fri,
+        08-Apr-2022 09:54:11 GMT; Max-Age=31536000
       Strict-Transport-Security:
       - max-age=31536001; includeSubDomains
       X-Content-Type-Options:
@@ -97,10 +97,10 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Wed, 07 Apr 2021 09:54:50 GMT
+      - Thu, 08 Apr 2021 09:54:11 GMT
       Set-Cookie:
-      - BrowserId=S1-jlpeHEeuU4MM-YNbUvg; domain=.salesforce.com; path=/; expires=Thu,
-        07-Apr-2022 09:54:50 GMT; Max-Age=31536000
+      - BrowserId=XlTmqphQEeuE61-tsF5LNw; domain=.salesforce.com; path=/; expires=Fri,
+        08-Apr-2022 09:54:11 GMT; Max-Age=31536000
       Strict-Transport-Security:
       - max-age=31536002; includeSubDomains
       Transfer-Encoding:

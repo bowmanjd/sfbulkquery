@@ -5,17 +5,18 @@
     "{username}": {{
       "session_id": "{session_id}",
       "timestamp": {timestamp},
-      "display_name": "Sylvester Green",
-      "user_id": "{user_id}",
-      "username": "{username}",
-      "phone": "+1 5555551234",
+      "display_name": "{display_name}",
+      "email": "{username}",
       "language": "en_US",
       "locale": "en_US",
-      "timezone": "America/New_York"
+      "phone": "{phone}",
+      "timezone": "America/New_York",
+      "user_id": "{user_id}",
+      "username": "{username}"
     }}
   }},
   "org_id": "{org_id}",
-  "org_name": "Green Solutions",
+  "org_name": "{company}",
   "endpoints": {{
     "tooling": "https://{mydomain}.my.salesforce.com/services/data/v51.0/tooling",
     "metadata": "https://{mydomain}.my.salesforce.com/services/data/v51.0/metadata",

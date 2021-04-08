@@ -366,12 +366,13 @@ class SessionUser(typing.NamedTuple):
     session_id: str
     timestamp: float
     display_name: str = ""
-    user_id: str = ""
-    username: str = ""
-    phone: str = ""
+    email: str = ""
     language: str = ""
     locale: str = ""
+    phone: str = ""
     timezone: str = ""
+    user_id: str = ""
+    username: str = ""
 
 
 class Session(typing.NamedTuple):
@@ -380,14 +381,14 @@ class Session(typing.NamedTuple):
     domain: str
     rest_url: str
     users: typing.Dict[str, SessionUser]
-    org_id: str = ""
-    org_name: str = ""
     endpoints: typing.Mapping[str, str] = {}
     instance: str = ""
-    timezone: str = ""
+    lang_locale: str = ""
+    org_id: str = ""
+    org_name: str = ""
     org_type: str = ""
     sandbox: bool = False
-    lang_locale: str = ""
+    timezone: str = ""
 
     def recent_user(self) -> SessionUser:
         """Get most recent user.
@@ -567,6 +568,7 @@ def session_update(username: str = None) -> Session:
     session_dict["users"].pop(tmp_user, None)
     session_dict["users"][id_info["username"]] = SessionUser(
         display_name=id_info["display_name"],
+        email=id_info["email"],
         session_id=session_id,
         user_id=id_info["user_id"],
         username=id_info["username"],
