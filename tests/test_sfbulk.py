@@ -1,4 +1,4 @@
-"""Tests for sfbulkquery."""
+"""Tests for sfbulk."""
 
 import io
 import json
@@ -16,7 +16,7 @@ from urllib.request import urlopen
 
 import pytest
 
-import sfbulkquery
+import sfbulk
 
 FAKE_MYDOMAIN = "fake-dev-ed"
 FAKE_DOMAIN = f"{FAKE_MYDOMAIN}.my.salesforce.com"
@@ -39,9 +39,9 @@ def new_session(**kwargs):
     raw = template.format(**kwargs)
     session_dict = json.loads(raw)
     session_dict["users"] = {
-        k: sfbulkquery.SessionUser(**v) for k, v in session_dict["users"].items()
+        k: sfbulk.SessionUser(**v) for k, v in session_dict["users"].items()
     }
-    return sfbulkquery.Session(**session_dict)
+    return sfbulk.Session(**session_dict)
 
 
 def gen_session():
@@ -69,7 +69,7 @@ def sf_global_session(vcr):
         domain = FAKE_DOMAIN
         session_id = FAKE_SESSION_ID
     else:
-        domain, session_id = sfbulkquery.session_prompt()
+        domain, session_id = sfbulk.session_prompt()
     return SFSession(domain, session_id)
 
 
@@ -77,7 +77,7 @@ def sanitize_cassette(content, sf_session):
     new_content = content.replace(
         sf_session.domain.split(".")[0], FAKE_MYDOMAIN
     ).replace(sf_session.session_id, FAKE_SESSION_ID)
-    session = sfbulkquery.session_read(sf_session.domain)
+    session = sfbulk.session_read(sf_session.domain)
     if session:
         if session.org_name:
             pattern = session.org_name.replace(" ", r"\s+")
@@ -107,10 +107,10 @@ def sanitize_cassette(content, sf_session):
 
 @pytest.fixture()
 def sf_session(sf_global_session, vcr_cassette):
-    sfbulkquery.session_read.cache_clear()
-    sfbulkquery.session_endpoints.cache_clear()
-    sfbulkquery.session_id_info.cache_clear()
-    sfbulkquery.session_org_info.cache_clear()
+    sfbulk.session_read.cache_clear()
+    sfbulk.session_endpoints.cache_clear()
+    sfbulk.session_id_info.cache_clear()
+    sfbulk.session_org_info.cache_clear()
     yield sf_global_session
     if vcr_cassette.play_count == 0:
         vcr_cassette._save()
@@ -119,23 +119,23 @@ def sf_session(sf_global_session, vcr_cassette):
             content = cassette_path.read_text()
             new_content = sanitize_cassette(content, sf_global_session)
             cassette_path.write_text(new_content)
-    sfbulkquery.session_destroy_all()
+    sfbulk.session_destroy_all()
 
 
 def test_session_domain(sf_session):
-    assert sf_session.domain == sfbulkquery.session_domain(sf_session.domain)
+    assert sf_session.domain == sfbulk.session_domain(sf_session.domain)
 
 
 def test_session_domain_url(sf_session):
     mydomain = sf_session.domain.split(".")[0]
     url = f"https://{mydomain}.lightning.force.com/lightning/setup/SetupOneHome/home"
-    assert sf_session.domain == sfbulkquery.session_domain(url)
+    assert sf_session.domain == sfbulk.session_domain(url)
 
 
 def test_session_update(sf_session, monkeypatch):
     user_input = io.StringIO(json.dumps([sf_session.domain, sf_session.session_id]))
     monkeypatch.setattr("sys.stdin", user_input)
-    session = sfbulkquery.session_update()
+    session = sfbulk.session_update()
     sample_session = new_session(
         mydomain=FAKE_MYDOMAIN,
         session_id=FAKE_SESSION_ID,
@@ -158,7 +158,7 @@ def test_session_update_invalid(sf_session, monkeypatch):
     good_try = json.dumps([sf_session.domain, sf_session.session_id])
     user_input = io.StringIO(f"{bad_try}\n{good_try}")
     monkeypatch.setattr("sys.stdin", user_input)
-    session = sfbulkquery.session_update()
+    session = sfbulk.session_update()
     assert session.domain == sf_session.domain
     assert session.recent_user().session_id == sf_session.session_id
 
@@ -170,24 +170,24 @@ def test_session_id_repeatedly_invalid(sf_session, monkeypatch):
     user_input.seek(0)
     monkeypatch.setattr("sys.stdin", user_input)
     with pytest.raises(urllib.error.HTTPError) as e:
-        sfbulkquery.session_org_info(sf_session.domain)
+        sfbulk.session_org_info(sf_session.domain)
     assert e.value.code == 401
 
 
 def test_bookmarklet_js():
     snippet = pathlib.Path("tests/bookmarklet.js").read_text()
     bookmarklet = f"javascript:{snippet}".strip()
-    assert bookmarklet == sfbulkquery.bookmarklet().strip()
+    assert bookmarklet == sfbulk.bookmarklet().strip()
 
 
 def test_bookmarklet_html():
     html = pathlib.Path("tests/bookmarklet.html").read_text().strip()
-    assert html == sfbulkquery.bookmarklet_html().strip()
+    assert html == sfbulk.bookmarklet_html().strip()
 
 
 def test_bookmarklet_instructions():
     port = secrets.choice(range(1024, 49151))
-    p = Process(target=sfbulkquery.run, args=(["bookmark", "-p", str(port)],))
+    p = Process(target=sfbulk.run, args=(["bookmark", "-p", str(port)],))
     p.start()
     p.join(0.5)
     with urlopen(f"http://localhost:{port}") as response:
@@ -201,21 +201,21 @@ def test_bookmarklet_instructions():
 
 
 def test_run_file(capsys, monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["sfbulkquery"])
-    runpy.run_module("sfbulkquery", run_name="__main__")
+    monkeypatch.setattr(sys, "argv", ["sfbulk"])
+    runpy.run_module("sfbulk", run_name="__main__")
     captured = capsys.readouterr()
     assert "Commands available" in captured.out
 
 
 def test_latest_session_and_destroy():
-    sfbulkquery.session_destroy_all()
+    sfbulk.session_destroy_all()
     session = gen_session()
-    sfbulkquery.session_write(session)
-    session_path = sfbulkquery.session_file_path(session.domain)
+    sfbulk.session_write(session)
+    session_path = sfbulk.session_file_path(session.domain)
     assert session_path.exists()
-    new_domain = sfbulkquery.session_latest_domain()
-    new_session = sfbulkquery.session_read(new_domain)
-    sfbulkquery.session_destroy(session_path)
+    new_domain = sfbulk.session_latest_domain()
+    new_session = sfbulk.session_read(new_domain)
+    sfbulk.session_destroy(session_path)
     assert not session_path.exists()
     assert session.domain == new_domain
     assert session.recent_user().session_id == new_session.recent_user().session_id
@@ -223,21 +223,21 @@ def test_latest_session_and_destroy():
 
 def test_destroy_all_sessions():
     for _ in range(secrets.randbelow(100)):
-        sfbulkquery.session_write(gen_session())
-    assert len(tuple(sfbulkquery.session_list_all()))
-    sfbulkquery.session_destroy_all()
-    assert not len(tuple(sfbulkquery.session_list_all()))
+        sfbulk.session_write(gen_session())
+    assert len(tuple(sfbulk.session_list_all()))
+    sfbulk.session_destroy_all()
+    assert not len(tuple(sfbulk.session_list_all()))
 
 
 def test_latest_session_none():
-    sfbulkquery.session_destroy_all()
-    new_domain = sfbulkquery.session_latest_domain()
+    sfbulk.session_destroy_all()
+    new_domain = sfbulk.session_latest_domain()
     assert not new_domain
 
 
 def test_read_session_nonexistent_domain():
-    sfbulkquery.session_destroy_all()
-    assert sfbulkquery.session_read("nonexistent.my.salesforce.com") is None
+    sfbulk.session_destroy_all()
+    assert sfbulk.session_read("nonexistent.my.salesforce.com") is None
 
 
 def test_session_prompt(monkeypatch):
@@ -246,21 +246,21 @@ def test_session_prompt(monkeypatch):
         json.dumps([session.domain, session.recent_user().session_id])
     )
     monkeypatch.setattr("sys.stdin", user_input)
-    new_domain, new_session_id = sfbulkquery.session_prompt()
-    sfbulkquery.session_destroy_all()
+    new_domain, new_session_id = sfbulk.session_prompt()
+    sfbulk.session_destroy_all()
     assert session.domain == new_domain
     assert session.recent_user().session_id == new_session_id
 
 
 def test_query(capsys):
     query = "SELECT Id FROM Contact LIMIT 5"
-    sfbulkquery.run(["-q", query])
+    sfbulk.run(["-q", query])
     captured = capsys.readouterr()
     assert query in captured.out
 
 
 def test_response_not_json():
-    response = sfbulkquery.Response(
+    response = sfbulk.Response(
         "This is not JSON", Message(), 200, "https://example.org"
     )
     assert response.json() == ""

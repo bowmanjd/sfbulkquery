@@ -299,6 +299,7 @@ def query(args: argparse.Namespace) -> None:
         args: argparse namespace with address and port
     """
     print(args.query)
+    session = session_read(args.domain)
 
 
 class SessionUser(typing.NamedTuple):
@@ -527,13 +528,13 @@ def session_update(username: str = None) -> Session:
 
 @functools.lru_cache(maxsize=None)
 def session_read(domain: str) -> typing.Optional[Session]:
-    """Get Session ID for this domain.
+    """Retrieve Session for this domain.
 
     Args:
         domain: Salesforce domain for API access
 
     Returns:
-        Session ID
+        Session or None if not found
     """
     try:
         with session_file_path(domain).open() as handle:
@@ -545,6 +546,25 @@ def session_read(domain: str) -> typing.Optional[Session]:
     except (FileNotFoundError, json.JSONDecodeError):
         session = None
     return session
+
+
+def session_obtain(url: str) -> Session:
+    """Retrieve or create Session for this domain.
+
+    Args:
+        url: Salesforce org url or domain for API access
+
+    Returns:
+        Session
+    """
+    domain = session_domain(url)
+    session = session_read(domain)
+    if not session:
+        session = session_update()
+        if session.domain != domain:
+            logging.warn("Warning: requested domain has changed")
+            logging.warn(f"Originally requested: {domain}")
+            logging.warn(f"This will be overridden by newly requested {session.domain}")
 
 
 def session_latest_domain() -> typing.Optional[str]:

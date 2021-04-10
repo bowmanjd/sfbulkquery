@@ -1,6 +1,6 @@
-# sfbulkquery
+# sfbulk
 
-Bulk query client for Salesforce.
+Bulk API client for Salesforce.
 
 ## Dependencies
 

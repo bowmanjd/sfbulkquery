@@ -27,7 +27,7 @@ readouterr
 repo
 req
 runpy
-sfbulkquery
+sfbulk
 sobjects
 subparsers
 tmp
