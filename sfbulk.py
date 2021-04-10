@@ -292,16 +292,6 @@ def bookmark_serve(args: argparse.Namespace) -> None:
     server.handle_request()
 
 
-def query(args: argparse.Namespace) -> None:
-    """Query Salesforce.
-
-    Args:
-        args: argparse namespace with address and port
-    """
-    print(args.query)
-    session = session_read(args.domain)
-
-
 class SessionUser(typing.NamedTuple):
     """Session user info."""
 
@@ -548,7 +538,7 @@ def session_read(domain: str) -> typing.Optional[Session]:
     return session
 
 
-def session_obtain(url: str) -> Session:
+def session_obtain(url: str = None) -> Session:
     """Retrieve or create Session for this domain.
 
     Args:
@@ -557,14 +547,19 @@ def session_obtain(url: str) -> Session:
     Returns:
         Session
     """
-    domain = session_domain(url)
-    session = session_read(domain)
-    if not session:
+    session = None
+    if not url:
         session = session_update()
+    else:
+        domain = session_domain(url)
+        session = session_read(domain)
+        if not session:
+            session = session_update()
         if session.domain != domain:
             logging.warn("Warning: requested domain has changed")
             logging.warn(f"Originally requested: {domain}")
             logging.warn(f"This will be overridden by newly requested {session.domain}")
+    return session
 
 
 def session_latest_domain() -> typing.Optional[str]:
@@ -617,6 +612,58 @@ def session_write(session: Session) -> None:
     session_read.cache_clear()
 
 
+def sf_request(
+    domain: str,
+    endpoint: str,
+    path: str,
+    data: dict = None,
+    params: dict = None,
+    method: str = "GET",
+) -> Response:
+    """Salesforce REST API request.
+
+    Args:
+        domain: Salesforce domain for API access
+        endpoint: specific key for endpoint
+        path: remaining path after endpoint
+        data: optional dict of keys/values for request
+        params: optional dict of keys/values to be encoded in URL query string
+        method: HTTP method , such as GET or POST
+
+    Returns:
+        Response object
+    """
+    session = session_obtain(domain)
+    endpoint = session.endpoints[endpoint]
+    url = "/".join((endpoint, path))
+    return request(url, data=data, params=params, method=method)
+
+
+def query(args: argparse.Namespace) -> None:
+    """Query Salesforce.
+
+    Args:
+        args: argparse namespace with address and port
+    """
+    session = session_obtain(args.domain)
+    request_body = {"operation": "query", "query": args.query}
+    response = sf_request(
+        session.domain, "jobs", "query", data=request_body, method="POST"
+    )
+    submission_response = response.json()
+    job_id = submission_response["id"]
+    for _ in range(args.timeout):
+        time.sleep(1)
+        response = sf_request(session.domain, "jobs", f"query/{job_id}")
+        state = response.json()["state"]
+        logging.info(f"Job status: {state}")
+        if state == "JobComplete":
+            break
+    response = sf_request(session.domain, "jobs", f"query/{job_id}/results")
+    args.outputfile.write_text(response.body, encoding="utf-8-sig")
+    logging.info(f"Saved file to {args.outputfile}")
+
+
 def run(arg_list: list = None) -> None:
     """Process and execute command-line.
 
@@ -629,16 +676,46 @@ def run(arg_list: list = None) -> None:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-
-    parser.add_argument(
-        "-q",
-        "--query",
-        help="SELECT SOQL query",
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument(
+        "-d",
+        "--domain",
+        default=None,
+        help="Salesforce instance domain for API access",
         type=str,
+    )
+    parent_parser.add_argument(
+        "-t",
+        "--timeout",
+        default=60,
+        help="Time in seconds to wait for job to finish before quitting",
+        type=int,
+    )
+    parent_parser.add_argument(
+        "-o",
+        "--outputfile",
+        default=pathlib.Path("query.csv"),
+        help="Output filename",
+        type=pathlib.Path,
     )
 
     parser.set_defaults(func=query)
     subparsers = parser.add_subparsers(title="Commands available")
+
+    query_help = "Query objects and fields using SOQL or SOSL"
+    query_parser = subparsers.add_parser(
+        "query",
+        description=query_help,
+        help=query_help,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[parent_parser],
+    )
+    query_parser.add_argument(
+        "query",
+        help="The SELECT query to use",
+        type=str,
+    )
+    query_parser.set_defaults(func=query)
 
     bookmark_help = "Serve instructions for SF Session authentication via bookmarklet"
     bookmark_parser = subparsers.add_parser(

@@ -7,6 +7,7 @@ import re
 import runpy
 import secrets
 import sys
+import tempfile
 import time
 import typing
 import urllib.error
@@ -252,11 +253,16 @@ def test_session_prompt(monkeypatch):
     assert session.recent_user().session_id == new_session_id
 
 
-def test_query(capsys):
-    query = "SELECT Id FROM Contact LIMIT 5"
-    sfbulk.run(["-q", query])
-    captured = capsys.readouterr()
-    assert query in captured.out
+def test_query(sf_session, monkeypatch):
+    query = "SELECT Id, Name FROM Contact LIMIT 5"
+    credentials = json.dumps([sf_session.domain, sf_session.session_id])
+    user_input = io.StringIO(f"{credentials}\n")
+    monkeypatch.setattr("sys.stdin", user_input)
+    temp_path = pathlib.Path(tempfile.gettempdir(), "sfbulktest") / "query.csv"
+    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    sfbulk.run(["query", "-o", str(temp_path), query])
+    # assert "JobComplete" in captured.out
+    assert '"Id","Name"' in temp_path.read_text()
 
 
 def test_response_not_json():
