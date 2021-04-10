@@ -556,9 +556,11 @@ def session_obtain(url: str = None) -> Session:
         if not session:
             session = session_update()
         if session.domain != domain:
-            logging.warn("Warning: requested domain has changed")
-            logging.warn(f"Originally requested: {domain}")
-            logging.warn(f"This will be overridden by newly requested {session.domain}")
+            logging.warning("Warning: requested domain has changed")
+            logging.warning(f"Originally requested: {domain}")
+            logging.warning(
+                f"This will be overridden by newly requested {session.domain}"
+            )
     return session
 
 

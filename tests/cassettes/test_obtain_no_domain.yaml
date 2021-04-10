@@ -1,0 +1,430 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '{"tooling":"/services/data/v51.0/tooling","metadata":"/services/data/v51.0/metadata","eclair":"/services/data/v51.0/eclair","folders":"/services/data/v51.0/folders","prechatForms":"/services/data/v51.0/prechatForms","contact-tracing":"/services/data/v51.0/contact-tracing","jsonxform":"/services/data/v51.0/jsonxform","chatter":"/services/data/v51.0/chatter","payments":"/services/data/v51.0/payments","tabs":"/services/data/v51.0/tabs","appMenu":"/services/data/v51.0/appMenu","quickActions":"/services/data/v51.0/quickActions","queryAll":"/services/data/v51.0/queryAll","commerce":"/services/data/v51.0/commerce","wave":"/services/data/v51.0/wave","iot":"/services/data/v51.0/iot","analytics":"/services/data/v51.0/analytics","search":"/services/data/v51.0/search","smartdatadiscovery":"/services/data/v51.0/smartdatadiscovery","identity":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","composite":"/services/data/v51.0/composite","parameterizedSearch":"/services/data/v51.0/parameterizedSearch","fingerprint":"/services/data/v51.0/fingerprint","theme":"/services/data/v51.0/theme","nouns":"/services/data/v51.0/nouns","event":"/services/data/v51.0/event","serviceTemplates":"/services/data/v51.0/serviceTemplates","recent":"/services/data/v51.0/recent","connect":"/services/data/v51.0/connect","licensing":"/services/data/v51.0/licensing","limits":"/services/data/v51.0/limits","process":"/services/data/v51.0/process","dedupe":"/services/data/v51.0/dedupe","async-queries":"/services/data/v51.0/async-queries","query":"/services/data/v51.0/query","jobs":"/services/data/v51.0/jobs","match":"/services/data/v51.0/match","localizedvalue":"/services/data/v51.0/localizedvalue","mobile":"/services/data/v51.0/mobile","emailConnect":"/services/data/v51.0/emailConnect","consent":"/services/data/v51.0/consent","tokenizer":"/services/data/v51.0/tokenizer","compactLayouts":"/services/data/v51.0/compactLayouts","knowledgeManagement":"/services/data/v51.0/knowledgeManagement","sobjects":"/services/data/v51.0/sobjects","actions":"/services/data/v51.0/actions","support":"/services/data/v51.0/support"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:19 GMT
+      Set-Cookie:
+      - BrowserId=RqjCLpoJEeumUInskKOYfw; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:19 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=156/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - login.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB
+  response:
+    body:
+      string: '{"id":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","asserted_user":true,"user_id":"0054a101010TkPiJJB","organization_id":"00D7f111111tgVeRBP","username":"sgreen@example.org","nick_name":"sgreen","display_name":"Sylvester
+        Green","email":"sgreen@example.org","email_verified":true,"first_name":"Sylvester","last_name":"Green","timezone":"America/New_York","photos":{"picture":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/F","thumbnail":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/T"},"addr_street":null,"addr_city":null,"addr_state":null,"addr_country":"US","addr_zip":null,"mobile_phone":"+1
+        5555551234","mobile_phone_verified":true,"is_lightning_login_user":false,"status":{"created_date":null,"body":null},"urls":{"enterprise":"https://fake-dev-ed.my.salesforce.com/services/Soap/c/{version}/00D7f111111tgVe","metadata":"https://fake-dev-ed.my.salesforce.com/services/Soap/m/{version}/00D7f111111tgVe","partner":"https://fake-dev-ed.my.salesforce.com/services/Soap/u/{version}/00D7f111111tgVe","rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/","sobjects":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/sobjects/","search":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/search/","query":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/query/","recent":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/recent/","tooling_soap":"https://fake-dev-ed.my.salesforce.com/services/Soap/T/{version}/00D7f111111tgVe","tooling_rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/tooling/","profile":"https://fake-dev-ed.my.salesforce.com/0054a101010TkPiJJB","feeds":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feeds","groups":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/groups","users":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/users","feed_items":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-items","feed_elements":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-elements","custom_domain":"https://fake-dev-ed.my.salesforce.com"},"active":true,"user_type":"STANDARD","language":"en_US","locale":"en_US","utcOffset":-18000000,"last_modified_date":"2021-04-10T09:57:11Z"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:19 GMT
+      Set-Cookie:
+      - BrowserId=RsfisZoJEeuoDYdqpEtZ2A; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:19 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP?fields=Name%2CInstanceName%2CTimeZoneSidKey%2COrganizationType%2CIsSandbox%2CLanguageLocaleKey
+  response:
+    body:
+      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green
+        Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
+        Edition","IsSandbox":false,"LanguageLocaleKey":"en_US","Id":"00D7f111111tgVeRBP"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:19 GMT
+      Set-Cookie:
+      - BrowserId=RufGxJoJEeuQfDF1JJlC3A; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:19 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=156/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '{"tooling":"/services/data/v51.0/tooling","metadata":"/services/data/v51.0/metadata","eclair":"/services/data/v51.0/eclair","folders":"/services/data/v51.0/folders","prechatForms":"/services/data/v51.0/prechatForms","contact-tracing":"/services/data/v51.0/contact-tracing","jsonxform":"/services/data/v51.0/jsonxform","chatter":"/services/data/v51.0/chatter","payments":"/services/data/v51.0/payments","tabs":"/services/data/v51.0/tabs","appMenu":"/services/data/v51.0/appMenu","quickActions":"/services/data/v51.0/quickActions","queryAll":"/services/data/v51.0/queryAll","commerce":"/services/data/v51.0/commerce","wave":"/services/data/v51.0/wave","iot":"/services/data/v51.0/iot","analytics":"/services/data/v51.0/analytics","search":"/services/data/v51.0/search","smartdatadiscovery":"/services/data/v51.0/smartdatadiscovery","identity":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","composite":"/services/data/v51.0/composite","parameterizedSearch":"/services/data/v51.0/parameterizedSearch","fingerprint":"/services/data/v51.0/fingerprint","theme":"/services/data/v51.0/theme","nouns":"/services/data/v51.0/nouns","event":"/services/data/v51.0/event","serviceTemplates":"/services/data/v51.0/serviceTemplates","recent":"/services/data/v51.0/recent","connect":"/services/data/v51.0/connect","licensing":"/services/data/v51.0/licensing","limits":"/services/data/v51.0/limits","process":"/services/data/v51.0/process","dedupe":"/services/data/v51.0/dedupe","async-queries":"/services/data/v51.0/async-queries","query":"/services/data/v51.0/query","jobs":"/services/data/v51.0/jobs","match":"/services/data/v51.0/match","localizedvalue":"/services/data/v51.0/localizedvalue","mobile":"/services/data/v51.0/mobile","emailConnect":"/services/data/v51.0/emailConnect","consent":"/services/data/v51.0/consent","tokenizer":"/services/data/v51.0/tokenizer","compactLayouts":"/services/data/v51.0/compactLayouts","knowledgeManagement":"/services/data/v51.0/knowledgeManagement","sobjects":"/services/data/v51.0/sobjects","actions":"/services/data/v51.0/actions","support":"/services/data/v51.0/support"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:31:04 GMT
+      Set-Cookie:
+      - BrowserId=YWEfKpoJEeuDlMNqDVQCRA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:31:04 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=158/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - login.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB
+  response:
+    body:
+      string: '{"id":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","asserted_user":true,"user_id":"0054a101010TkPiJJB","organization_id":"00D7f111111tgVeRBP","username":"sgreen@example.org","nick_name":"sgreen","display_name":"Sylvester
+        Green","email":"sgreen@example.org","email_verified":true,"first_name":"Sylvester","last_name":"Green","timezone":"America/New_York","photos":{"picture":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/F","thumbnail":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/T"},"addr_street":null,"addr_city":null,"addr_state":null,"addr_country":"US","addr_zip":null,"mobile_phone":"+1
+        5555551234","mobile_phone_verified":true,"is_lightning_login_user":false,"status":{"created_date":null,"body":null},"urls":{"enterprise":"https://fake-dev-ed.my.salesforce.com/services/Soap/c/{version}/00D7f111111tgVe","metadata":"https://fake-dev-ed.my.salesforce.com/services/Soap/m/{version}/00D7f111111tgVe","partner":"https://fake-dev-ed.my.salesforce.com/services/Soap/u/{version}/00D7f111111tgVe","rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/","sobjects":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/sobjects/","search":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/search/","query":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/query/","recent":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/recent/","tooling_soap":"https://fake-dev-ed.my.salesforce.com/services/Soap/T/{version}/00D7f111111tgVe","tooling_rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/tooling/","profile":"https://fake-dev-ed.my.salesforce.com/0054a101010TkPiJJB","feeds":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feeds","groups":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/groups","users":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/users","feed_items":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-items","feed_elements":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-elements","custom_domain":"https://fake-dev-ed.my.salesforce.com"},"active":true,"user_type":"STANDARD","language":"en_US","locale":"en_US","utcOffset":-18000000,"last_modified_date":"2021-04-10T09:57:11Z"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:31:04 GMT
+      Set-Cookie:
+      - BrowserId=YYQQIpoJEeuDDGn0lUSJjQ; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:31:04 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP?fields=Name%2CInstanceName%2CTimeZoneSidKey%2COrganizationType%2CIsSandbox%2CLanguageLocaleKey
+  response:
+    body:
+      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green
+        Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
+        Edition","IsSandbox":false,"LanguageLocaleKey":"en_US","Id":"00D7f111111tgVeRBP"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:31:04 GMT
+      Set-Cookie:
+      - BrowserId=YanBH5oJEeuccfGVp17rPw; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:31:04 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=158/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '{"tooling":"/services/data/v51.0/tooling","metadata":"/services/data/v51.0/metadata","eclair":"/services/data/v51.0/eclair","folders":"/services/data/v51.0/folders","prechatForms":"/services/data/v51.0/prechatForms","contact-tracing":"/services/data/v51.0/contact-tracing","jsonxform":"/services/data/v51.0/jsonxform","chatter":"/services/data/v51.0/chatter","payments":"/services/data/v51.0/payments","tabs":"/services/data/v51.0/tabs","appMenu":"/services/data/v51.0/appMenu","quickActions":"/services/data/v51.0/quickActions","queryAll":"/services/data/v51.0/queryAll","commerce":"/services/data/v51.0/commerce","wave":"/services/data/v51.0/wave","iot":"/services/data/v51.0/iot","analytics":"/services/data/v51.0/analytics","search":"/services/data/v51.0/search","smartdatadiscovery":"/services/data/v51.0/smartdatadiscovery","identity":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","composite":"/services/data/v51.0/composite","parameterizedSearch":"/services/data/v51.0/parameterizedSearch","fingerprint":"/services/data/v51.0/fingerprint","theme":"/services/data/v51.0/theme","nouns":"/services/data/v51.0/nouns","event":"/services/data/v51.0/event","serviceTemplates":"/services/data/v51.0/serviceTemplates","recent":"/services/data/v51.0/recent","connect":"/services/data/v51.0/connect","licensing":"/services/data/v51.0/licensing","limits":"/services/data/v51.0/limits","process":"/services/data/v51.0/process","dedupe":"/services/data/v51.0/dedupe","async-queries":"/services/data/v51.0/async-queries","query":"/services/data/v51.0/query","jobs":"/services/data/v51.0/jobs","match":"/services/data/v51.0/match","localizedvalue":"/services/data/v51.0/localizedvalue","mobile":"/services/data/v51.0/mobile","emailConnect":"/services/data/v51.0/emailConnect","consent":"/services/data/v51.0/consent","tokenizer":"/services/data/v51.0/tokenizer","compactLayouts":"/services/data/v51.0/compactLayouts","knowledgeManagement":"/services/data/v51.0/knowledgeManagement","sobjects":"/services/data/v51.0/sobjects","actions":"/services/data/v51.0/actions","support":"/services/data/v51.0/support"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:36:51 GMT
+      Set-Cookie:
+      - BrowserId=MBt7tpoKEeuavms5pOe5oA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:36:51 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=171/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - login.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB
+  response:
+    body:
+      string: '{"id":"https://login.salesforce.com/id/00D7f111111tgVeRBP/0054a101010TkPiJJB","asserted_user":true,"user_id":"0054a101010TkPiJJB","organization_id":"00D7f111111tgVeRBP","username":"sgreen@example.org","nick_name":"sgreen","display_name":"Sylvester
+        Green","email":"sgreen@example.org","email_verified":true,"first_name":"Sylvester","last_name":"Green","timezone":"America/New_York","photos":{"picture":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/F","thumbnail":"https://fake-dev-ed--c.documentforce.com/profilephoto/005/T"},"addr_street":null,"addr_city":null,"addr_state":null,"addr_country":"US","addr_zip":null,"mobile_phone":"+1
+        5555551234","mobile_phone_verified":true,"is_lightning_login_user":false,"status":{"created_date":null,"body":null},"urls":{"enterprise":"https://fake-dev-ed.my.salesforce.com/services/Soap/c/{version}/00D7f111111tgVe","metadata":"https://fake-dev-ed.my.salesforce.com/services/Soap/m/{version}/00D7f111111tgVe","partner":"https://fake-dev-ed.my.salesforce.com/services/Soap/u/{version}/00D7f111111tgVe","rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/","sobjects":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/sobjects/","search":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/search/","query":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/query/","recent":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/recent/","tooling_soap":"https://fake-dev-ed.my.salesforce.com/services/Soap/T/{version}/00D7f111111tgVe","tooling_rest":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/tooling/","profile":"https://fake-dev-ed.my.salesforce.com/0054a101010TkPiJJB","feeds":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feeds","groups":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/groups","users":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/users","feed_items":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-items","feed_elements":"https://fake-dev-ed.my.salesforce.com/services/data/v{version}/chatter/feed-elements","custom_domain":"https://fake-dev-ed.my.salesforce.com"},"active":true,"user_type":"STANDARD","language":"en_US","locale":"en_US","utcOffset":-18000000,"last_modified_date":"2021-04-10T09:57:11Z"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:36:54 GMT
+      Set-Cookie:
+      - BrowserId=MhKQkJoKEeu3EaEsxwXcpA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:36:54 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer 00D7f111111tgVe!ZHz2ibKYjcbg10mT9TmqJY7gIipNcE6GUAvDXVwlX0YrrWOz_XPVM68.v_sNvAcM_l-I9masbK6lMy1W8VGd5Z9nw2BYfdPFkgVIWlj_hWZyjF09V-JOAnn1w16qNvQ
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP?fields=Name%2CInstanceName%2CTimeZoneSidKey%2COrganizationType%2CIsSandbox%2CLanguageLocaleKey
+  response:
+    body:
+      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
+        Edition","IsSandbox":false,"LanguageLocaleKey":"en_US","Id":"00D7f111111tgVeRBP"}'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:36:54 GMT
+      Set-Cookie:
+      - BrowserId=MjRwcpoKEeuAmAkX9gyG1A; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:36:54 GMT; Max-Age=31536000
+      Sforce-Limit-Info:
+      - api-usage=171/15000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

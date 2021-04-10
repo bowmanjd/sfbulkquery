@@ -253,6 +253,22 @@ def test_session_prompt(monkeypatch):
     assert session.recent_user().session_id == new_session_id
 
 
+def test_obtain_no_domain(sf_session, monkeypatch):
+    credentials = json.dumps([sf_session.domain, sf_session.session_id])
+    user_input = io.StringIO(f"{credentials}\n")
+    monkeypatch.setattr("sys.stdin", user_input)
+    session = sfbulk.session_obtain(None)
+    assert session.domain == sf_session.domain
+
+
+def test_obtain_different_domain(sf_session, monkeypatch):
+    credentials = json.dumps([sf_session.domain, sf_session.session_id])
+    user_input = io.StringIO(f"{credentials}\n")
+    monkeypatch.setattr("sys.stdin", user_input)
+    session = sfbulk.session_obtain("candoris.my.salesforce.com")
+    assert session.domain == sf_session.domain
+
+
 def test_query(sf_session, monkeypatch):
     query = "SELECT Id, Name FROM Contact LIMIT 5"
     credentials = json.dumps([sf_session.domain, sf_session.session_id])

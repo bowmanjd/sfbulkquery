@@ -1194,4 +1194,260 @@ interactions:
     status:
       code: 401
       message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:16 GMT
+      Set-Cookie:
+      - BrowserId=RQuzf5oJEeu_VXfW3E-cJw; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:16 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:17 GMT
+      Set-Cookie:
+      - BrowserId=RSoQ8poJEeu2Enk7ehN0gA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:17 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:30:18 GMT
+      Set-Cookie:
+      - BrowserId=RhmhbpoJEeuO6ftjjlKdkw; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:30:18 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:31:02 GMT
+      Set-Cookie:
+      - BrowserId=YIsKkpoJEeu-RvP0ydNZAA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:31:03 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:31:03 GMT
+      Set-Cookie:
+      - BrowserId=YK2GVJoJEeu0ulEf91lejA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:31:03 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 14:36:50 GMT
+      Set-Cookie:
+      - BrowserId=L35RdJoKEeuBS-kzBtwmxQ; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 14:36:50 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
 version: 1
