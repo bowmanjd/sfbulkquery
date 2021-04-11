@@ -1202,11 +1202,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1245,11 +1245,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1288,11 +1288,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1331,11 +1331,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1374,11 +1374,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1417,11 +1417,11 @@ interactions:
       Connection:
       - close
       Host:
-      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      - fake-dev-ed.my.salesforce.com
       User-Agent:
       - Python-urllib/3.9
     method: GET
-    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
   response:
     body:
       string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
@@ -1439,6 +1439,319 @@ interactions:
         10-Apr-2022 14:36:50 GMT; Max-Age=31536000
       Strict-Transport-Security:
       - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:23 GMT
+      Set-Cookie:
+      - BrowserId=nUz8n5ozEeuavms5pOe5oA; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:23 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:23 GMT
+      Set-Cookie:
+      - BrowserId=nWgmTJozEeuL76vCJWbypQ; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:23 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:24 GMT
+      Set-Cookie:
+      - BrowserId=nYVLn5ozEeuZ6Y-FWiiNgQ; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:24 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:24 GMT
+      Set-Cookie:
+      - BrowserId=nZ-KVpozEeuYhStRoSYdJw; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:24 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:24 GMT
+      Set-Cookie:
+      - BrowserId=nblT05ozEeuarFW7ebdA5Q; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:24 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:24 GMT
+      Set-Cookie:
+      - BrowserId=ndVm3JozEeuQfDF1JJlC3A; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:24 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - fake-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sat, 10 Apr 2021 19:33:24 GMT
+      Set-Cookie:
+      - BrowserId=ne331JozEeuPwRPmg8o4OQ; domain=.salesforce.com; path=/; expires=Sun,
+        10-Apr-2022 19:33:24 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      Transfer-Encoding:
+      - chunked
       WWW-Authenticate:
       - Token
       X-Content-Type-Options:

@@ -433,6 +433,7 @@ def session_url(domain: str) -> str:
     return f"https://{domain}{url_path}"
 
 
+@functools.lru_cache(maxsize=None)
 def session_domain(url: str) -> str:
     """Get canonical API domain from URL.
 
@@ -641,29 +642,101 @@ def sf_request(
     return request(url, data=data, params=params, method=method)
 
 
-def query(args: argparse.Namespace) -> None:
+def query(
+    domain: str,
+    soql: str,
+) -> str:
+    """Query Salesforce.
+
+    Args:
+        domain: Salesforce domain for API access
+        soql: SOQL query string
+
+    Returns:
+        Job ID
+    """
+    session = session_obtain(domain)
+    request_body = {"operation": "query", "query": soql, "lineEnding": "CRLF"}
+    response = sf_request(
+        session.domain, "jobs", "query", data=request_body, method="POST"
+    )
+    submission_response = response.json()
+    return submission_response["id"]
+
+
+def status(
+    domain: str,
+    job_id: str,
+) -> str:
+    """Get status of Bulk Job.
+
+    Args:
+        domain: Salesforce domain for API access
+        job_id: Bulk Job ID
+
+    Returns:
+        Job status
+    """
+    session = session_obtain(domain)
+    response = sf_request(session.domain, "jobs", f"query/{job_id}")
+    return response.json()["state"]
+
+
+def wait(
+    domain: str,
+    job_id: str,
+    timeout: int = 60,
+) -> str:
+    """Get status of Bulk Job.
+
+    Args:
+        domain: Salesforce domain for API access
+        job_id: Bulk Job ID
+        timeout: Number of seconds to wait for job to complete, polling for status
+
+    Returns:
+        Job status
+    """
+    session = session_obtain(domain)
+    for _ in range(timeout):
+        time.sleep(1)
+        job_status = status(session.domain, job_id)
+        logging.info(f"Job status: {job_status}")
+        if job_status == "JobComplete":
+            break
+    return job_status
+
+
+def results(
+    domain: str,
+    job_id: str,
+) -> str:
+    """Get results of Bulk Job.
+
+    Args:
+        domain: Salesforce domain for API access
+        job_id: Bulk Job ID
+
+    Returns:
+        Job result body
+    """
+    session = session_obtain(domain)
+    response = sf_request(session.domain, "jobs", f"query/{job_id}/results")
+    return response.body
+
+
+def query_cmd(args: argparse.Namespace) -> None:
     """Query Salesforce.
 
     Args:
         args: argparse namespace with address and port
     """
     session = session_obtain(args.domain)
-    request_body = {"operation": "query", "query": args.query}
-    response = sf_request(
-        session.domain, "jobs", "query", data=request_body, method="POST"
-    )
-    submission_response = response.json()
-    job_id = submission_response["id"]
-    for _ in range(args.timeout):
-        time.sleep(1)
-        response = sf_request(session.domain, "jobs", f"query/{job_id}")
-        state = response.json()["state"]
-        logging.info(f"Job status: {state}")
-        if state == "JobComplete":
-            break
-    response = sf_request(session.domain, "jobs", f"query/{job_id}/results")
-    args.outputfile.write_text(response.body, encoding="utf-8-sig")
-    logging.info(f"Saved file to {args.outputfile}")
+    job_id = query(session.domain, args.query)
+    job_status = wait(session.domain, job_id, args.timeout)
+    if job_status == "JobComplete":
+        args.output.write_text(results(session.domain, job_id), encoding="utf-8-sig")
+        logging.info(f"Saved file to {args.output}")
 
 
 def run(arg_list: list = None) -> None:
@@ -678,24 +751,24 @@ def run(arg_list: list = None) -> None:
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument(
+    request_parser = argparse.ArgumentParser(add_help=False)
+    request_parser.add_argument(
         "-d",
         "--domain",
         default=None,
         help="Salesforce instance domain for API access",
         type=str,
     )
-    parent_parser.add_argument(
+    request_parser.add_argument(
         "-t",
         "--timeout",
         default=60,
         help="Time in seconds to wait for job to finish before quitting",
         type=int,
     )
-    parent_parser.add_argument(
+    request_parser.add_argument(
         "-o",
-        "--outputfile",
+        "--output",
         default=pathlib.Path("query.csv"),
         help="Output filename",
         type=pathlib.Path,
@@ -710,14 +783,14 @@ def run(arg_list: list = None) -> None:
         description=query_help,
         help=query_help,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[parent_parser],
+        parents=[request_parser],
     )
     query_parser.add_argument(
         "query",
         help="The SELECT query to use",
         type=str,
     )
-    query_parser.set_defaults(func=query)
+    query_parser.set_defaults(func=query_cmd)
 
     bookmark_help = "Serve instructions for SF Session authentication via bookmarklet"
     bookmark_parser = subparsers.add_parser(

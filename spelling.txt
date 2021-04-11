@@ -6,6 +6,7 @@ bookmarklet
 capsys
 casefold
 charset
+cmd
 ctime
 debuglevel
 doseq
@@ -29,6 +30,7 @@ req
 runpy
 sfbulk
 sobjects
+soql
 subparsers
 tmp
 unlink
