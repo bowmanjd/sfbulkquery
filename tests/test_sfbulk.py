@@ -269,16 +269,24 @@ def test_obtain_different_domain(sf_session, monkeypatch):
     assert session.domain == sf_session.domain
 
 
-def test_query(sf_session, monkeypatch):
-    query = "SELECT Id, Name FROM Contact LIMIT 5"
-    credentials = json.dumps([sf_session.domain, sf_session.session_id])
-    user_input = io.StringIO(f"{credentials}\n")
-    monkeypatch.setattr("sys.stdin", user_input)
+def test_query(sf_session):
+    query = "SELECT Id, Name FROM Account LIMIT 5"
     temp_path = pathlib.Path(tempfile.gettempdir(), "sfbulktest") / "query.csv"
     temp_path.parent.mkdir(parents=True, exist_ok=True)
-    sfbulk.run(["query", "-o", str(temp_path), query])
-    # assert "JobComplete" in captured.out
-    assert '"Id","Name"' in temp_path.read_text()
+    sfbulk.run(
+        [
+            "query",
+            "-d",
+            sf_session.domain,
+            "-s",
+            sf_session.session_id,
+            "-o",
+            str(temp_path),
+            query,
+        ]
+    )
+    sample = pathlib.Path("tests/sample_query.csv").read_text(encoding="utf-8-sig")
+    assert sample == temp_path.read_text(encoding="utf-8-sig")
 
 
 def test_response_not_json():

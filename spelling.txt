@@ -1,3 +1,4 @@
+isatty
 Python
 Runtime
 TMP

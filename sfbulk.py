@@ -133,11 +133,12 @@ class Response(typing.NamedTuple):
 
 def request(
     url: str,
-    data: dict = None,
+    json_data: dict = None,
+    text_data: str = None,
     params: dict = None,
     headers: dict = None,
     method: str = "GET",
-    data_as_json: bool = True,
+    data_type: str = "application/json; charset=UTF-8",
     sf_domain: str = None,
 ) -> Response:
     """
@@ -145,11 +146,12 @@ def request(
 
     Args:
         url: url to fetch
-        data: dict of keys/values to be encoded and submitted
+        json_data: dict of keys/values to be encoded and submitted
+        text_data: unicode string to be encoded and submitted
         params: dict of keys/values to be encoded in URL query string
         headers: optional dict of request headers
         method: HTTP method , such as GET or POST
-        data_as_json: if True, data will be JSON-encoded
+        data_type: content type for uploaded data
         sf_domain: optional explicit domain
 
     Returns:
@@ -157,25 +159,22 @@ def request(
         rendered from JSON
     """
     method = method.upper()
-    request_data = None
     headers = headers or {}
-    data = data or {}
     params = params or {}
     headers = {"Accept": "application/json, text/csv", **headers}
-
-    if method == "GET":
-        params = {**params, **data}
-        data = None
 
     if params:
         url += "?" + urllib.parse.urlencode(params, doseq=True, safe="/")
 
-    if data:
-        if data_as_json:
-            request_data = json.dumps(data).encode()
-            headers["Content-Type"] = "application/json; charset=UTF-8"
-        else:
-            request_data = urllib.parse.urlencode(data).encode()
+    request_data = None
+
+    if json_data or text_data:
+        headers["Content-Type"] = data_type
+
+    if json_data:
+        request_data = json.dumps(json_data).encode()
+    elif text_data:
+        request_data = text_data.encode()
 
     sf_domain = sf_domain or urllib.parse.urlparse(url).netloc
     sf_session = session_read(sf_domain)
@@ -451,10 +450,14 @@ def session_domain(url: str) -> str:
     return domain
 
 
-def session_update(username: str = None) -> Session:
+def session_update(
+    domain: str = None, session_id: str = None, username: str = None
+) -> Session:
     """Update given session object.
 
     Args:
+        domain: Salesforce API domain
+        session_id: Salesforce session ID
         username: optional Salesforce username
 
     Returns:
@@ -463,7 +466,9 @@ def session_update(username: str = None) -> Session:
     tmp_user = "placeholder@example.org"
     if not username:
         username = tmp_user
-    domain, session_id = session_prompt()
+    if not (domain and session_id):
+        domain, session_id = session_prompt()
+    session_id = session_id or ""
     rest_url = session_url(domain)
     domain = urllib.parse.urlparse(rest_url).netloc
     old_session = session_read(domain)
@@ -539,7 +544,7 @@ def session_read(domain: str) -> typing.Optional[Session]:
     return session
 
 
-def session_obtain(url: str = None) -> Session:
+def session_obtain(url: str = None, session_id: str = None) -> Session:
     """Retrieve or create Session for this domain.
 
     Args:
@@ -555,7 +560,7 @@ def session_obtain(url: str = None) -> Session:
         domain = session_domain(url)
         session = session_read(domain)
         if not session:
-            session = session_update()
+            session = session_update(domain, session_id)
         if session.domain != domain:
             logging.warning("Warning: requested domain has changed")
             logging.warning(f"Originally requested: {domain}")
@@ -619,8 +624,10 @@ def sf_request(
     domain: str,
     endpoint: str,
     path: str,
-    data: dict = None,
+    json_data: dict = None,
+    text_data: str = None,
     params: dict = None,
+    data_type: str = "application/json; charset=UTF-8",
     method: str = "GET",
 ) -> Response:
     """Salesforce REST API request.
@@ -629,8 +636,10 @@ def sf_request(
         domain: Salesforce domain for API access
         endpoint: specific key for endpoint
         path: remaining path after endpoint
-        data: optional dict of keys/values for request
+        json_data: optional dict of keys/values for request
+        text_data: optional text data
         params: optional dict of keys/values to be encoded in URL query string
+        data_type: content type for uploaded data
         method: HTTP method , such as GET or POST
 
     Returns:
@@ -639,52 +648,93 @@ def sf_request(
     session = session_obtain(domain)
     endpoint = session.endpoints[endpoint]
     url = "/".join((endpoint, path))
-    return request(url, data=data, params=params, method=method)
+    return request(
+        url, json_data=json_data, text_data=text_data, params=params, method=method
+    )
 
 
-def query(
+def job_create(
     domain: str,
-    soql: str,
+    operation: str = "query",
+    sf_object: str = None,
+    query: str = None,
+    line_ending: str = "CRLF",
 ) -> str:
     """Query Salesforce.
 
     Args:
         domain: Salesforce domain for API access
-        soql: SOQL query string
+        operation: query, insert, update, upsert, delete, or hardDelete
+        sf_object: Salesforce object name, such as Contact
+        query: SOQL query string
+        line_ending: CRLF or LF
 
     Returns:
         Job ID
+
+    Raises:
+        ValueError: if operation does not have query or object specified as appropriate
     """
     session = session_obtain(domain)
-    request_body = {"operation": "query", "query": soql, "lineEnding": "CRLF"}
+    request_body = {"operation": operation, "lineEnding": line_ending}
+    if operation == "query" and query:
+        request_body["query"] = query
+        job_type = "query"
+    elif sf_object:
+        request_body["object"] = sf_object
+        job_type = "ingest"
+    else:
+        raise ValueError(
+            "Job must be a query operation with query specified, "
+            "or other operation with object specified."
+        )
+
     response = sf_request(
-        session.domain, "jobs", "query", data=request_body, method="POST"
+        session.domain, "jobs", job_type, json_data=request_body, method="POST"
     )
     submission_response = response.json()
     return submission_response["id"]
 
 
-def status(
-    domain: str,
-    job_id: str,
-) -> str:
+def job_status(domain: str, job_id: str, job_type: str = "query") -> str:
     """Get status of Bulk Job.
 
     Args:
         domain: Salesforce domain for API access
         job_id: Bulk Job ID
+        job_type: query or ingest
 
     Returns:
         Job status
     """
     session = session_obtain(domain)
-    response = sf_request(session.domain, "jobs", f"query/{job_id}")
+    response = sf_request(session.domain, "jobs", f"{job_type}/{job_id}")
     return response.json()["state"]
 
 
-def wait(
+def job_upload(domain: str, job_id: str, content: str) -> None:
+    """Upload CSV content.
+
+    Args:
+        domain: Salesforce domain for API access
+        job_id: Bulk Job ID
+        content: CSV string
+    """
+    session = session_obtain(domain)
+    response = sf_request(
+        session.domain,
+        "jobs",
+        f"ingest/{job_id}/batches/",
+        text_data=content,
+        data_type="text/csv",
+        method="PUT",
+    )
+
+
+def job_wait(
     domain: str,
     job_id: str,
+    job_type: str = "query",
     timeout: int = 60,
 ) -> str:
     """Get status of Bulk Job.
@@ -692,19 +742,21 @@ def wait(
     Args:
         domain: Salesforce domain for API access
         job_id: Bulk Job ID
+        job_type: query or ingest
         timeout: Number of seconds to wait for job to complete, polling for status
 
     Returns:
         Job status
     """
     session = session_obtain(domain)
-    for _ in range(timeout):
-        time.sleep(1)
-        job_status = status(session.domain, job_id)
-        logging.info(f"Job status: {job_status}")
-        if job_status == "JobComplete":
+    start_time = time.time()
+    while int(time.time() - start_time) <= timeout:
+        status = job_status(session.domain, job_id)
+        logging.info(f"Job status: {status}")
+        if status == "JobComplete" or timeout == 0:
             break
-    return job_status
+        time.sleep(0.5)
+    return status
 
 
 def results(
@@ -729,14 +781,50 @@ def query_cmd(args: argparse.Namespace) -> None:
     """Query Salesforce.
 
     Args:
-        args: argparse namespace with address and port
+        args: argparse namespace with domain, output filename, and timeout
+    """
+    session = session_obtain(args.domain, args.session)
+    job_id = job_create(session.domain, query=args.query)
+    status = job_wait(session.domain, job_id, args.timeout)
+    logging.info(f"Status for job {job_id}: {status}")
+    if status == "JobComplete":
+        args.output.write(results(session.domain, job_id).encode("utf-8-sig"))
+        logging.info(f"Saved file to {args.output.name}")
+
+
+def api_cmd(args: argparse.Namespace) -> None:
+    """Perform API request from command line.
+
+    Args:
+        args: argparse namespace with domain, object, operation, and timeout
     """
     session = session_obtain(args.domain)
-    job_id = query(session.domain, args.query)
-    job_status = wait(session.domain, job_id, args.timeout)
-    if job_status == "JobComplete":
-        args.output.write_text(results(session.domain, job_id), encoding="utf-8-sig")
-        logging.info(f"Saved file to {args.output}")
+    params = {
+        "domain": session.domain,
+        "endpoint": args.endpoint,
+        "path": args.path,
+        "method": args.method,
+    }
+    if not args.input.isatty():
+        params["text_data"] = args.input.read()
+
+    response = sf_request(**params)
+    sys.stdout.write(response.body)
+
+
+def upload_cmd(args: argparse.Namespace) -> None:
+    """Upload data to Salesforce.
+
+    Args:
+        args: argparse namespace with domain, object, operation, and timeout
+    """
+    session = session_obtain(args.domain)
+    job_id = job_create(session.domain, sf_object=args.object, operation=args.operation)
+    status = job_wait(session.domain, job_id, job_type="ingest", timeout=args.timeout)
+    logging.info(f"Status for job {job_id}: {status}")
+    if status == "JobComplete":
+        args.output.write(results(session.domain, job_id).encode("utf-8-sig"))
+        logging.info(f"Saved file to {args.output.name}")
 
 
 def run(arg_list: list = None) -> None:
@@ -760,22 +848,69 @@ def run(arg_list: list = None) -> None:
         type=str,
     )
     request_parser.add_argument(
+        "-s",
+        "--session",
+        default=None,
+        help="Salesforce session ID",
+        type=str,
+    )
+    request_parser.add_argument(
         "-t",
         "--timeout",
         default=60,
         help="Time in seconds to wait for job to finish before quitting",
         type=int,
     )
+
     request_parser.add_argument(
         "-o",
         "--output",
-        default=pathlib.Path("query.csv"),
+        default=sys.stdout.buffer,
         help="Output filename",
-        type=pathlib.Path,
+        nargs="?",
+        type=argparse.FileType("wb"),
+    )
+    request_parser.add_argument(
+        "-i",
+        "--input",
+        default=sys.stdin.buffer,
+        help="Input filename",
+        nargs="?",
+        type=argparse.FileType("rb"),
     )
 
-    parser.set_defaults(func=query)
     subparsers = parser.add_subparsers(title="Commands available")
+
+    api_help = "Send/receive data from designated API endpoint"
+    api_parser = subparsers.add_parser(
+        "api",
+        description=api_help,
+        help=api_help,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[request_parser],
+    )
+    api_parser.add_argument(
+        "-e",
+        "--endpoint",
+        help="the endpoint name",
+        default="jobs",
+        type=str,
+    )
+    api_parser.add_argument(
+        "-p",
+        "--path",
+        help="additional url path, after the endpoint name",
+        type=str,
+    )
+    api_parser.add_argument(
+        "-m",
+        "--method",
+        choices=["GET", "POST", "PUT", "DELETE", "PATCH"],
+        help="HTTP method",
+        default="GET",
+        type=str,
+    )
+    api_parser.set_defaults(func=api_cmd)
 
     query_help = "Query objects and fields using SOQL or SOSL"
     query_parser = subparsers.add_parser(

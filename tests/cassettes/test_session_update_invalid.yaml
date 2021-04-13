@@ -1081,7 +1081,8 @@ interactions:
     uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP?fields=Name%2CInstanceName%2CTimeZoneSidKey%2COrganizationType%2CIsSandbox%2CLanguageLocaleKey
   response:
     body:
-      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
+      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green
+        Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
         Edition","IsSandbox":false,"LanguageLocaleKey":"en_US","Id":"00D7f111111tgVeRBP"}'
     headers:
       Cache-Control:
@@ -1313,7 +1314,8 @@ interactions:
     uri: https://fake-dev-ed.my.salesforce.com/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP?fields=Name%2CInstanceName%2CTimeZoneSidKey%2COrganizationType%2CIsSandbox%2CLanguageLocaleKey
   response:
     body:
-      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
+      string: '{"attributes":{"type":"Organization","url":"/services/data/v51.0/sobjects/Organization/00D7f111111tgVeRBP"},"Name":"Green
+        Endeavors","InstanceName":"NA174","TimeZoneSidKey":"America/Los_Angeles","OrganizationType":"Developer
         Edition","IsSandbox":false,"LanguageLocaleKey":"en_US","Id":"00D7f111111tgVeRBP"}'
     headers:
       Cache-Control:
@@ -1391,4 +1393,47 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json, text/csv
+      Authorization:
+      - Bearer bad_session
+      Connection:
+      - close
+      Host:
+      - devhub-bowmanjd-dev-ed.my.salesforce.com
+      User-Agent:
+      - Python-urllib/3.9
+    method: GET
+    uri: https://devhub-bowmanjd-dev-ed.my.salesforce.com/services/data/v51.0
+  response:
+    body:
+      string: '[{"message":"Session expired or invalid","errorCode":"INVALID_SESSION_ID"}]'
+    headers:
+      Cache-Control:
+      - no-cache,must-revalidate,max-age=0,no-store,private
+      Connection:
+      - close
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Sun, 11 Apr 2021 08:50:32 GMT
+      Set-Cookie:
+      - BrowserId=-WOqkpqiEeu1T-9b-mBj6g; domain=.salesforce.com; path=/; expires=Mon,
+        11-Apr-2022 08:50:32 GMT; Max-Age=31536000
+      Strict-Transport-Security:
+      - max-age=31536002; includeSubDomains
+      WWW-Authenticate:
+      - Token
+      X-Content-Type-Options:
+      - nosniff
+      X-Robots-Tag:
+      - none
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 401
+      message: Unauthorized
 version: 1
