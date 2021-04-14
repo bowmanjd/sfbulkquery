@@ -107,7 +107,7 @@ def sanitize_cassette(content, sf_session):
 
 
 @pytest.fixture()
-def sf_session(sf_global_session, vcr_cassette):
+def sf_session(sf_global_session, vcr_cassette, monkeypatch):
     sfbulk.session_read.cache_clear()
     sfbulk.session_endpoints.cache_clear()
     sfbulk.session_id_info.cache_clear()
@@ -123,6 +123,16 @@ def sf_session(sf_global_session, vcr_cassette):
     sfbulk.session_destroy_all()
 
 
+@pytest.fixture()
+def sf_session_patched(sf_session, monkeypatch):
+    monkeypatch.setattr(
+        sfbulk,
+        "session_prompt",
+        lambda: (sf_session.domain, sf_session.session_id),
+    )
+    yield sf_session
+
+
 def test_session_domain(sf_session):
     assert sf_session.domain == sfbulk.session_domain(sf_session.domain)
 
@@ -133,10 +143,10 @@ def test_session_domain_url(sf_session):
     assert sf_session.domain == sfbulk.session_domain(url)
 
 
-def test_session_update(sf_session, monkeypatch):
-    user_input = io.StringIO(json.dumps([sf_session.domain, sf_session.session_id]))
-    monkeypatch.setattr("sys.stdin", user_input)
-    session = sfbulk.session_update()
+def test_session_update(sf_session_patched):
+    session = sfbulk.session_update(
+        domain=sf_session_patched.domain, session_id=sf_session_patched.session_id
+    )
     sample_session = new_session(
         mydomain=FAKE_MYDOMAIN,
         session_id=FAKE_SESSION_ID,
@@ -148,9 +158,9 @@ def test_session_update(sf_session, monkeypatch):
         company=FAKE_COMPANY,
         timestamp=session.recent_user().timestamp,
     )
-    assert session.domain == sf_session.domain
-    assert session.recent_user().session_id == sf_session.session_id
-    if sf_session.domain == FAKE_DOMAIN:
+    assert session.domain == sf_session_patched.domain
+    assert session.recent_user().session_id == sf_session_patched.session_id
+    if sf_session_patched.domain == FAKE_DOMAIN:
         assert session == sample_session
 
 
@@ -248,45 +258,58 @@ def test_session_prompt(monkeypatch):
     )
     monkeypatch.setattr("sys.stdin", user_input)
     new_domain, new_session_id = sfbulk.session_prompt()
-    sfbulk.session_destroy_all()
     assert session.domain == new_domain
     assert session.recent_user().session_id == new_session_id
 
 
-def test_obtain_no_domain(sf_session, monkeypatch):
-    credentials = json.dumps([sf_session.domain, sf_session.session_id])
-    user_input = io.StringIO(f"{credentials}\n")
-    monkeypatch.setattr("sys.stdin", user_input)
+def test_obtain_no_domain(sf_session_patched):
     session = sfbulk.session_obtain(None)
-    assert session.domain == sf_session.domain
+    assert session.domain == sf_session_patched.domain
 
 
-def test_obtain_different_domain(sf_session, monkeypatch):
-    credentials = json.dumps([sf_session.domain, sf_session.session_id])
-    user_input = io.StringIO(f"{credentials}\n")
-    monkeypatch.setattr("sys.stdin", user_input)
+def test_obtain_different_domain(sf_session_patched):
     session = sfbulk.session_obtain("candoris.my.salesforce.com")
-    assert session.domain == sf_session.domain
+    assert session.domain == sf_session_patched.domain
 
 
-def test_query(sf_session):
+def test_query(sf_session_patched, tmp_path):
     query = "SELECT Id, Name FROM Account LIMIT 5"
-    temp_path = pathlib.Path(tempfile.gettempdir(), "sfbulktest") / "query.csv"
-    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_file = tmp_path / "query.csv"
     sfbulk.run(
         [
             "query",
             "-d",
-            sf_session.domain,
+            sf_session_patched.domain,
             "-s",
-            sf_session.session_id,
+            sf_session_patched.session_id,
             "-o",
-            str(temp_path),
+            str(temp_file),
             query,
         ]
     )
     sample = pathlib.Path("tests/sample_query.csv").read_text(encoding="utf-8-sig")
-    assert sample == temp_path.read_text(encoding="utf-8-sig")
+    assert sample == temp_file.read_text(encoding="utf-8-sig")
+
+
+def test_api_cmd(sf_session_patched, tmp_path, monkeypatch):
+    temp_file = tmp_path / "limits.json"
+    user_input = io.BytesIO(b"")
+    user_input.isatty = lambda: True
+    monkeypatch.setattr("sys.stdin", io.TextIOWrapper(user_input))
+    sfbulk.run(
+        [
+            "api",
+            "-d",
+            sf_session_patched.domain,
+            "-s",
+            sf_session_patched.session_id,
+            "-e",
+            "limits",
+            "-o",
+            str(temp_file),
+        ]
+    )
+    assert "DailyApiRequests" in temp_file.read_text()
 
 
 def test_response_not_json():

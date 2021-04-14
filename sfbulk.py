@@ -623,7 +623,7 @@ def session_write(session: Session) -> None:
 def sf_request(
     domain: str,
     endpoint: str,
-    path: str,
+    path: str = None,
     json_data: dict = None,
     text_data: str = None,
     params: dict = None,
@@ -647,6 +647,7 @@ def sf_request(
     """
     session = session_obtain(domain)
     endpoint = session.endpoints[endpoint]
+    path = path or ""
     url = "/".join((endpoint, path))
     return request(
         url, json_data=json_data, text_data=text_data, params=params, method=method
@@ -806,10 +807,10 @@ def api_cmd(args: argparse.Namespace) -> None:
         "method": args.method,
     }
     if not args.input.isatty():
-        params["text_data"] = args.input.read()
+        params["text_data"] = args.input.read().decode()
 
     response = sf_request(**params)
-    sys.stdout.write(response.body)
+    args.output.write(response.body.encode())
 
 
 def upload_cmd(args: argparse.Namespace) -> None:
