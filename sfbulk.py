@@ -760,15 +760,17 @@ def job_wait(
     return status
 
 
-def results(
+def job_results(
     domain: str,
     job_id: str,
+    job_type: str = "query",
 ) -> str:
     """Get results of Bulk Job.
 
     Args:
         domain: Salesforce domain for API access
         job_id: Bulk Job ID
+        job_type: query or ingest
 
     Returns:
         Job result body
@@ -789,7 +791,7 @@ def query_cmd(args: argparse.Namespace) -> None:
     status = job_wait(session.domain, job_id, args.timeout)
     logging.info(f"Status for job {job_id}: {status}")
     if status == "JobComplete":
-        args.output.write(results(session.domain, job_id).encode("utf-8-sig"))
+        args.output.write(job_results(session.domain, job_id).encode("utf-8-sig"))
         logging.info(f"Saved file to {args.output.name}")
 
 
@@ -824,7 +826,7 @@ def upload_cmd(args: argparse.Namespace) -> None:
     status = job_wait(session.domain, job_id, job_type="ingest", timeout=args.timeout)
     logging.info(f"Status for job {job_id}: {status}")
     if status == "JobComplete":
-        args.output.write(results(session.domain, job_id).encode("utf-8-sig"))
+        args.output.write(job_results(session.domain, job_id).encode("utf-8-sig"))
         logging.info(f"Saved file to {args.output.name}")
 
 

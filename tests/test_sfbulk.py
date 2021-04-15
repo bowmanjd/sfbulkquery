@@ -1,5 +1,6 @@
 """Tests for sfbulk."""
 
+import builtins
 import io
 import json
 import pathlib
@@ -7,7 +8,6 @@ import re
 import runpy
 import secrets
 import sys
-import tempfile
 import time
 import typing
 import urllib.error
@@ -167,8 +167,18 @@ def test_session_update(sf_session_patched):
 def test_session_update_invalid(sf_session, monkeypatch):
     bad_try = json.dumps([sf_session.domain, "bad_session"])
     good_try = json.dumps([sf_session.domain, sf_session.session_id])
-    user_input = io.StringIO(f"{bad_try}\n{good_try}")
-    monkeypatch.setattr("sys.stdin", user_input)
+    failed_once = False
+
+    def fake_input(prompt):
+        nonlocal failed_once
+        if failed_once:
+            result = good_try
+        else:
+            result = bad_try
+            failed_once = True
+        return result
+
+    monkeypatch.setattr(builtins, "input", fake_input)
     session = sfbulk.session_update()
     assert session.domain == sf_session.domain
     assert session.recent_user().session_id == sf_session.session_id
@@ -176,10 +186,7 @@ def test_session_update_invalid(sf_session, monkeypatch):
 
 def test_session_id_repeatedly_invalid(sf_session, monkeypatch):
     bad_try = json.dumps([sf_session.domain, "bad_session"])
-    user_input = io.StringIO()
-    user_input.writelines([f"{bad_try}\n"] * 7)
-    user_input.seek(0)
-    monkeypatch.setattr("sys.stdin", user_input)
+    monkeypatch.setattr(builtins, "input", lambda x: bad_try)
     with pytest.raises(urllib.error.HTTPError) as e:
         sfbulk.session_org_info(sf_session.domain)
     assert e.value.code == 401
@@ -253,10 +260,8 @@ def test_read_session_nonexistent_domain():
 
 def test_session_prompt(monkeypatch):
     session = gen_session()
-    user_input = io.StringIO(
-        json.dumps([session.domain, session.recent_user().session_id])
-    )
-    monkeypatch.setattr("sys.stdin", user_input)
+    credentials = json.dumps([session.domain, session.recent_user().session_id])
+    monkeypatch.setattr(builtins, "input", lambda x: credentials)
     new_domain, new_session_id = sfbulk.session_prompt()
     assert session.domain == new_domain
     assert session.recent_user().session_id == new_session_id
@@ -291,11 +296,12 @@ def test_query(sf_session_patched, tmp_path):
     assert sample == temp_file.read_text(encoding="utf-8-sig")
 
 
-def test_api_cmd(sf_session_patched, tmp_path, monkeypatch):
+def test_api_cmd(sf_session_patched, tmp_path):
     temp_file = tmp_path / "limits.json"
-    user_input = io.BytesIO(b"")
-    user_input.isatty = lambda: True
-    monkeypatch.setattr("sys.stdin", io.TextIOWrapper(user_input))
+    empty_file = tmp_path / "empty.txt"
+    empty_file.write_text("")
+    # user_input = io.BytesIO(b"") # noqa
+    # monkeypatch.setattr("sys.stdin", io.TextIOWrapper(user_input)) # noqa
     sfbulk.run(
         [
             "api",
@@ -307,6 +313,8 @@ def test_api_cmd(sf_session_patched, tmp_path, monkeypatch):
             "limits",
             "-o",
             str(temp_file),
+            "-i",
+            str(empty_file),
         ]
     )
     assert "DailyApiRequests" in temp_file.read_text()
