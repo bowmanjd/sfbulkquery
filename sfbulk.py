@@ -134,7 +134,7 @@ class Response(typing.NamedTuple):
 def request(
     url: str,
     json_data: dict = None,
-    text_data: str = None,
+    text_data: bytes = None,
     params: dict = None,
     headers: dict = None,
     method: str = "GET",
@@ -147,7 +147,7 @@ def request(
     Args:
         url: url to fetch
         json_data: dict of keys/values to be encoded and submitted
-        text_data: unicode string to be encoded and submitted
+        text_data: bytes to be submitted
         params: dict of keys/values to be encoded in URL query string
         headers: optional dict of request headers
         method: HTTP method , such as GET or POST
@@ -158,6 +158,7 @@ def request(
         A dict with headers, body, status code, and, if applicable, object
         rendered from JSON
     """
+    logging.info(url)
     method = method.upper()
     headers = headers or {}
     params = params or {}
@@ -174,7 +175,7 @@ def request(
     if json_data:
         request_data = json.dumps(json_data).encode()
     elif text_data:
-        request_data = text_data.encode()
+        request_data = text_data
 
     sf_domain = sf_domain or urllib.parse.urlparse(url).netloc
     sf_session = session_read(sf_domain)
@@ -625,7 +626,7 @@ def sf_request(
     endpoint: str,
     path: str = None,
     json_data: dict = None,
-    text_data: str = None,
+    text_data: bytes = None,
     params: dict = None,
     data_type: str = "application/json; charset=UTF-8",
     method: str = "GET",
@@ -649,9 +650,28 @@ def sf_request(
     endpoint = session.endpoints[endpoint]
     path = path or ""
     url = "/".join((endpoint, path))
-    return request(
-        url, json_data=json_data, text_data=text_data, params=params, method=method
-    )
+
+    try:
+        response = request(
+            url,
+            json_data=json_data,
+            text_data=text_data,
+            params=params,
+            data_type=data_type,
+            method=method,
+        )
+    except urllib.error.HTTPError as e:
+        logging.error(
+            "\n".join(
+                [
+                    f"code: {e.code}"
+                    f"reason: {e.reason}"
+                    f"headers: {e.headers}"
+                    f"error:{json.load(e)}"
+                ]
+            )
+        )
+    return response
 
 
 def job_create(
@@ -713,7 +733,7 @@ def job_status(domain: str, job_id: str, job_type: str = "query") -> str:
     return response.json()["state"]
 
 
-def job_upload(domain: str, job_id: str, content: str) -> None:
+def job_upload(domain: str, job_id: str, content: bytes) -> None:
     """Upload CSV content.
 
     Args:
@@ -722,14 +742,21 @@ def job_upload(domain: str, job_id: str, content: str) -> None:
         content: CSV string
     """
     session = session_obtain(domain)
-    response = sf_request(
-        session.domain,
-        "jobs",
-        f"ingest/{job_id}/batches/",
-        text_data=content,
-        data_type="text/csv",
-        method="PUT",
-    )
+    try:
+        response = sf_request(
+            session.domain,
+            "jobs",
+            f"ingest/{job_id}/batches",
+            text_data=content,
+            data_type="text/csv",
+            method="PUT",
+        )
+    except urllib.error.HTTPError as e:
+        logging.error(
+            f"code: {e.code}\nreason: {e.reason}\nheaders: {e.headers}\nerror:{e.read()}"
+        )
+    else:
+        logging.info(response.json())
 
 
 def job_wait(
@@ -809,7 +836,7 @@ def api_cmd(args: argparse.Namespace) -> None:
         "method": args.method,
     }
     if not args.input.isatty():
-        params["text_data"] = args.input.read().decode()
+        params["text_data"] = args.input.read()
 
     response = sf_request(**params)
     args.output.write(response.body.encode())
@@ -823,11 +850,9 @@ def upload_cmd(args: argparse.Namespace) -> None:
     """
     session = session_obtain(args.domain)
     job_id = job_create(session.domain, sf_object=args.object, operation=args.operation)
-    status = job_wait(session.domain, job_id, job_type="ingest", timeout=args.timeout)
-    logging.info(f"Status for job {job_id}: {status}")
-    if status == "JobComplete":
-        args.output.write(job_results(session.domain, job_id).encode("utf-8-sig"))
-        logging.info(f"Saved file to {args.output.name}")
+    job_upload(
+        session.domain, job_id, content=args.input.read().decode("utf-8-sig").encode()
+    )
 
 
 def run(arg_list: list = None) -> None:
@@ -929,6 +954,28 @@ def run(arg_list: list = None) -> None:
         type=str,
     )
     query_parser.set_defaults(func=query_cmd)
+
+    upload_help = "Upload CSV data"
+    upload_parser = subparsers.add_parser(
+        "upload",
+        description=upload_help,
+        help=upload_help,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[request_parser],
+    )
+    upload_parser.add_argument(
+        "-O",
+        "--object",
+        help="Salesforce object",
+        type=str,
+    )
+    upload_parser.add_argument(
+        "-a",
+        "--operation",
+        help="Action/operation, such as insert, update, upsert, or delete",
+        type=str,
+    )
+    upload_parser.set_defaults(func=upload_cmd)
 
     bookmark_help = "Serve instructions for SF Session authentication via bookmarklet"
     bookmark_parser = subparsers.add_parser(
