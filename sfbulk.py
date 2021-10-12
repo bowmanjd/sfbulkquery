@@ -158,7 +158,6 @@ def request(
         A dict with headers, body, status code, and, if applicable, object
         rendered from JSON
     """
-    logging.info(url)
     method = method.upper()
     headers = headers or {}
     params = params or {}
